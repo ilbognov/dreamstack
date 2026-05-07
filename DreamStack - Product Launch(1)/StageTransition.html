@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DreamStack — moving on…</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ------------------------------------------------------------
+     StageTransition (Figma rebuild)
+     ------------------------------------------------------------
+     One dark card centered on a #1A1A1A canvas. Inside, a small
+     check-circle kicker, a bold headline, a sub-paragraph, and a
+     row of three stage cards connected by thin arrows. The dot
+     grid only shows in the lower half of the canvas (a radial
+     mask, like the Figma frame).
+
+     Modes:
+       • intro mode (no ?from)  →  DreamCatcher is the active card.
+       • from=catcher&to=studio →  Catcher = done, Studio = active.
+       • from=studio&to=factory →  Catcher + Studio done, Factory active.
+
+     The active card alone is clickable and carries a blue "Start
+     Now" pill. Done cards carry a faint "✓ Captured" pill. The
+     future card is dim with no pill.
+     ------------------------------------------------------------ */
+
+  :root {
+    --bg: #1A1A1A;
+    --card: #212121;
+    --card-2: #323232;
+    --card-future: #323232;
+    --stroke-soft: #404040;
+    --stroke: #2E2E2E;
+    --ink: #E8E8EA;
+    --ink-2: #A8A9AB;
+    --ink-3: #7C7E82;
+    --ink-4: #5C5E62;
+    --blue: #237FFF;
+    --blue-bright: #4DA3FF;
+    --blue-stroke: #237FFF;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow: hidden;
+  }
+
+  /* ---- Animated halftone dot field (matches DreamCatcher welcome screen) ---- */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,.32) 1px, transparent 1.6px);
+    background-size: 14px 14px;
+    -webkit-mask-image:
+      linear-gradient(to bottom, transparent 50%, #000 88%, #000 100%),
+      radial-gradient(ellipse 70% 60% at 50% 100%, #000 30%, transparent 95%);
+    -webkit-mask-composite: source-in;
+            mask-image:
+      linear-gradient(to bottom, transparent 50%, #000 88%, #000 100%),
+      radial-gradient(ellipse 70% 60% at 50% 100%, #000 30%, transparent 95%);
+            mask-composite: intersect;
+    animation: dc-dots-fade 6s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* Wavy glow that travels horizontally */
+  body::after {
+    content: "";
+    position: fixed;
+    width: 50%; height: 70%;
+    left: 25%; bottom: -10%;
+    background: radial-gradient(circle, rgba(255,255,255,.16) 0%, rgba(255,255,255,.07) 35%, transparent 65%);
+    filter: blur(28px);
+    animation: dc-glow-wave 10s ease-in-out infinite;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 0;
+  }
+  @keyframes dc-dots-fade {
+    0%,100% { opacity:.55; }
+    50%      { opacity:.85; }
+  }
+  @keyframes dc-glow-wave {
+    0%   { transform: translate(-50%, 0); opacity:.6; }
+    25%  { transform: translate(-15%, -8%); opacity:.95; }
+    50%  { transform: translate(20%, 4%); opacity:.8; }
+    75%  { transform: translate(45%, -6%); opacity:.95; }
+    100% { transform: translate(-50%, 0); opacity:.6; }
+  }
+  .stage { position: relative; z-index: 1; }
+
+  .stage {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  /* ============================================================
+     OUTER CARD — the dark rounded panel. ~796 × 437 in Figma at
+     1× density (this scales fluidly with viewport). The header
+     copy is inset slightly more than the stage tile row, matching
+     the Figma frame.
+     ============================================================ */
+  .panel {
+    width: min(796px, calc(100vw - 48px));
+    background: var(--card);
+    border: 1px solid var(--stroke);
+    border-radius: 12px;
+    padding: 36px 40px 40px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.02) inset,
+      0 24px 60px rgba(0,0,0,.55);
+    opacity: 0;
+    transform: translateY(8px);
+    animation: fadeUp .55s .05s forwards cubic-bezier(.2,.8,.2,1);
+  }
+
+  /* Header block aligns with the tile row's left edge. */
+  .panel-header {
+    padding: 0 0 4px 0;
+  }
+
+  /* Kicker row — small check-circle icon + label */
+  .kicker {
+    display: flex; align-items: center; gap: 10px;
+    color: var(--ink-2);
+    font-size: 14px;
+    letter-spacing: -.005em;
+    margin-bottom: 10px;
+  }
+  .kicker-ico {
+    width: 18px; height: 18px;
+    display: inline-flex;
+    color: var(--ink-2);
+  }
+  .kicker-ico svg { display: block; }
+
+  /* Headline — slightly larger, semibold */
+  .headline {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -.015em;
+    color: #fff;
+    margin: 0 0 16px;
+    line-height: 1.25;
+  }
+
+  /* Sub-paragraph */
+  .sub {
+    margin: 0 0 32px;
+    color: var(--ink-3);
+    font-size: 13.5px;
+    line-height: 1.6;
+    letter-spacing: -.005em;
+    max-width: 520px;
+  }
+
+  /* ============================================================
+     STAGE ROW — three fixed-width tiles (200×183) with a small
+     arrow indicator between each pair. Matches Figma auto-layout
+     spec: tile, 22 gap, arrow, 22 gap, tile.
+     ============================================================ */
+  .stage-row {
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 22px;
+  }
+
+  /* Each tile. */
+  .tile {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--stroke-soft);
+    border-radius: 8px;
+    padding: 16px 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 200px;
+    min-height: 183px;
+    transition: border-color .35s ease, background .35s ease, box-shadow .35s ease, opacity .35s ease;
+  }
+
+  .tile-ico {
+    width: 26px; height: 26px;
+    color: var(--ink-2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tile-ico svg { display: block; }
+
+  .tile-name {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -.005em;
+    color: #fff;
+    margin: 0;
+  }
+  .tile-role {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin: -8px 0 0;
+    letter-spacing: -.005em;
+  }
+
+  /* Spacer pushes the action button to the bottom of each tile */
+  .tile-spacer { flex: 1; }
+
+  /* Action pill — applied per-mode below */
+  .tile-cta {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 36px;
+    border-radius: 999px;
+    border: 0;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -.005em;
+    cursor: default;
+    user-select: none;
+  }
+  .tile-cta svg { display: block; }
+
+  /* ----- Mode: done ----- */
+  .tile.done {
+    background: var(--card);
+    border-color: var(--stroke-soft);
+  }
+  .tile.done .tile-ico,
+  .tile.done .tile-name,
+  .tile.done .tile-role { opacity: .65; }
+  .tile.done .tile-cta {
+    background: var(--card-2);
+    color: var(--ink-2);
+  }
+  .tile.done .tile-cta .check-ico { color: var(--ink-3); }
+
+  /* ----- Mode: active ----- */
+  .tile.active {
+    background: #1A1A1A;
+    border-color: var(--blue-stroke);
+    box-shadow:
+      0 0 0 1px var(--blue-stroke) inset,
+      0 0 0 4px rgba(35, 127, 255, .10),
+      0 18px 40px rgba(35, 127, 255, .18);
+    cursor: pointer;
+    animation: activePulse 2.4s ease-in-out 1.6s infinite;
+  }
+  .tile.active:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 0 0 1.5px var(--blue-stroke) inset,
+      0 0 0 6px rgba(35, 127, 255, .14),
+      0 22px 48px rgba(35, 127, 255, .28);
+    animation-play-state: paused;
+  }
+  .tile.active .tile-ico { color: #fff; }
+  .tile.active .tile-cta {
+    /* Radial blue fill — matches the Figma "Radial" paint on the
+       Start Now button. Highlights toward the top, darker edges. */
+    background:
+      radial-gradient(120% 180% at 50% 0%,
+        #6FB6FF 0%,
+        #2E8BFF 35%,
+        #1066E6 90%);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.30) inset,
+      0 -1px 0 rgba(0, 28, 80, .30) inset,
+      0 6px 18px rgba(35, 127, 255, .40);
+    transition: filter .15s ease, transform .15s ease;
+  }
+  .tile.active .tile-cta:hover { filter: brightness(1.08); }
+  .tile.active .tile-cta:active { transform: translateY(1px); }
+
+  /* ----- Mode: future ----- */
+  .tile.future {
+    background: var(--card-future);
+    border-color: transparent;
+    opacity: .4;
+  }
+  .tile.future .tile-cta { display: none; }
+
+  /* ============================================================
+     ARROWS — thin horizontal line + arrowhead, sitting in their
+     own grid tracks.
+     ============================================================ */
+  .arrow-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-3);
+  }
+  .arrow-cell.lit { color: var(--blue); }
+  .arrow-cell svg { display: block; }
+
+  /* ============================================================
+     ENTRY ANIMS
+     ============================================================ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes activePulse {
+    0%, 100% {
+      box-shadow:
+        0 0 0 1px var(--blue-stroke) inset,
+        0 0 0 4px rgba(35, 127, 255, .10),
+        0 18px 40px rgba(35, 127, 255, .18);
+    }
+    50% {
+      box-shadow:
+        0 0 0 1px var(--blue-stroke) inset,
+        0 0 0 6px rgba(35, 127, 255, .16),
+        0 22px 50px rgba(35, 127, 255, .30);
+    }
+  }
+
+  /* ============================================================
+     RESPONSIVE — stack on narrow viewports
+     ============================================================ */
+  @media (max-width: 760px) {
+    .panel { padding: 24px 22px 26px; }
+    .panel-header { padding-left: 0; }
+    .stage-row {
+      flex-direction: column;
+      gap: 14px;
+    }
+    .tile { width: 100%; min-height: 0; padding: 14px; }
+    .arrow-cell { display: none; }
+    .headline { font-size: 19px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="panel" id="panel">
+    <div class="panel-header">
+      <div class="kicker">
+        <span class="kicker-ico" id="kicker-ico"></span>
+        <span id="kicker-text">Captured the conversation</span>
+      </div>
+      <h1 class="headline" id="headline"></h1>
+      <p class="sub" id="sub"></p>
+    </div>
+
+    <div class="stage-row">
+      <div class="tile" data-stage="catcher">
+        <span class="tile-ico" data-ico="catcher"></span>
+        <h2 class="tile-name">DreamCatcher</h2>
+        <p class="tile-role">Capture</p>
+        <div class="tile-spacer"></div>
+        <button class="tile-cta" type="button" tabindex="-1"></button>
+      </div>
+
+      <div class="arrow-cell" data-pair="catcher-studio" id="arrow-1"></div>
+
+      <div class="tile" data-stage="studio">
+        <span class="tile-ico" data-ico="studio"></span>
+        <h2 class="tile-name">DreamStudio</h2>
+        <p class="tile-role">Architect</p>
+        <div class="tile-spacer"></div>
+        <button class="tile-cta" type="button" tabindex="-1"></button>
+      </div>
+
+      <div class="arrow-cell" data-pair="studio-factory" id="arrow-2"></div>
+
+      <div class="tile" data-stage="factory">
+        <span class="tile-ico" data-ico="factory"></span>
+        <h2 class="tile-name">DreamFactory</h2>
+        <p class="tile-role">Build</p>
+        <div class="tile-spacer"></div>
+        <button class="tile-cta" type="button" tabindex="-1"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Inline SVG icons. The check-circle is supplied by Figma — same
+  // shape used for the header kicker and (scaled down) inside each
+  // "done" pill, so the visual language stays consistent.
+  const SVG_CHECK_CIRCLE_18 = `
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M8.25 12.75L10.5 15L15.75 9.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  const SVG_CHECK_14 = `
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <path d="M8.25 12.75L10.5 15L15.75 9.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+
+  // Brand stage marks — sourced from Figma. Loaded as <img> so we
+  // don't have to inline the (large) path data inside this file.
+  // Cache-bust query keeps the preview in sync after asset swaps.
+  const STAGE_ICON_VER = "v3";
+  const STAGE_ICON_SRC = {
+    catcher: `assets/icon-catcher.svg?${STAGE_ICON_VER}`,
+    studio:  `assets/icon-studio.svg?${STAGE_ICON_VER}`,
+    factory: `assets/icon-factory.svg?${STAGE_ICON_VER}`,
+  };
+  const stageIconImg = (stage) =>
+    `<img src="${STAGE_ICON_SRC[stage]}" alt="" width="26" height="26" style="display:block;"/>`;
+  const SVG_ARROW = (color) => `
+    <svg width="22" height="14" viewBox="0 0 22 14" fill="none">
+      <path d="M1 7h18M19 7l-4-4M19 7l-4 4" stroke="${color}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+
+  document.getElementById("kicker-ico").innerHTML = SVG_CHECK_CIRCLE_18;
+  document.querySelector('.tile-ico[data-ico="catcher"]').innerHTML = stageIconImg("catcher");
+  document.querySelector('.tile-ico[data-ico="studio"]').innerHTML  = stageIconImg("studio");
+  document.querySelector('.tile-ico[data-ico="factory"]').innerHTML = stageIconImg("factory");
+
+  // ------------------------------------------------------------
+  // Read params and decide stage roles.
+  //   no `from` → intro: DreamCatcher is active, no done cards.
+  //   from=catcher&to=studio → Catcher done, Studio active.
+  //   from=studio&to=factory → Catcher+Studio done, Factory active.
+  // ------------------------------------------------------------
+  const params = new URLSearchParams(location.search);
+  const rawFrom = params.get("from");
+  const from = rawFrom || null;
+  const to   = params.get("to") || (from ? "studio" : "catcher");
+  const isIntro = !from;
+
+  const STAGE_META = {
+    catcher: { name: "DreamCatcher", role: "Capture",   verb: "Captured the conversation",  roleVerb: "capturing",    doneLabel: "Captured",    href: "DreamCatcher.html" },
+    studio:  { name: "DreamStudio",  role: "Architect", verb: "Locked in the architecture", roleVerb: "architecting", doneLabel: "Architected", href: "DreamStudio.html"  },
+    factory: { name: "DreamFactory", role: "Build",     verb: "Shipped to production",      roleVerb: "building",     doneLabel: "Shipped",     href: "DreamFactory.html" },
+  };
+  const STAGES = ["catcher", "studio", "factory"];
+
+  const fromMeta = from ? STAGE_META[from] : null;
+  const toMeta   = STAGE_META[to] || STAGE_META.catcher;
+
+  // ---- Header copy -------------------------------------------------
+  const kickerText = document.getElementById("kicker-text");
+  const headlineEl = document.getElementById("headline");
+  const subEl      = document.getElementById("sub");
+
+  if (isIntro) {
+    kickerText.textContent = "Three surfaces. One workflow.";
+    headlineEl.textContent = "Start your dream session in DreamCatcher";
+    subEl.textContent =
+      "Capture the process flow in DreamCatcher, lock the architecture in DreamStudio, ship from DreamFactory. Click DreamCatcher to begin a Dream session demo.";
+  } else {
+    kickerText.textContent = `${fromMeta.verb}`;
+    headlineEl.textContent = `Now ${toMeta.roleVerb} in ${toMeta.name}`;
+    const SUB_COPY = {
+      "catcher-studio":
+        "The ontology lives. An engineer takes it from here — turning the conversation into a shippable architecture.",
+      "studio-factory":
+        "The architecture is the contract. Eight specialised agents pick up scope and start building in parallel.",
+    };
+    subEl.textContent = SUB_COPY[`${from}-${to}`] || `Heading into ${toMeta.name}…`;
+  }
+
+  // ---- Tile classes + CTAs -----------------------------------------
+  const fromIdx = from ? STAGES.indexOf(from) : -1;
+  const toIdx   = STAGES.indexOf(to);
+
+  document.querySelectorAll(".tile").forEach(tile => {
+    const stage = tile.getAttribute("data-stage");
+    const idx = STAGES.indexOf(stage);
+    const cta = tile.querySelector(".tile-cta");
+
+    if (fromIdx >= 0 && idx <= fromIdx) {
+      tile.classList.add("done");
+      const label = STAGE_META[stage]?.doneLabel || "Done";
+      cta.innerHTML = `<span class="check-ico">${SVG_CHECK_14}</span><span>${label}</span>`;
+    } else if (idx === toIdx) {
+      tile.classList.add("active");
+      cta.textContent = "Start Now";
+    } else {
+      tile.classList.add("future");
+      // CTA is hidden via .future .tile-cta { display: none }
+      cta.textContent = "";
+    }
+  });
+
+  // ---- Arrows -------------------------------------------------------
+  const ARROW_BLUE = "#237FFF";
+  const ARROW_GRAY = "#7C7E82";
+  document.querySelectorAll(".arrow-cell").forEach(cell => {
+    const [a, b] = cell.getAttribute("data-pair").split("-");
+    const aIdx = STAGES.indexOf(a);
+    const bIdx = STAGES.indexOf(b);
+    const lit = (aIdx === fromIdx && bIdx === toIdx) || (fromIdx >= 0 && bIdx <= fromIdx);
+    cell.innerHTML = SVG_ARROW(lit ? ARROW_BLUE : ARROW_GRAY);
+    if (lit) cell.classList.add("lit");
+  });
+
+  // ---- Click on the active card to advance -------------------------
+  // ?freeze=1 disables navigation (preview mode); ?auto=<ms> enables
+  // a kiosk-style auto-forward.
+  const freeze = params.get("freeze") === "1";
+  const autoMs = parseInt(params.get("auto") || "0", 10);
+  const activeCard = document.querySelector(`.tile[data-stage="${to}"]`);
+  const goToDest = () => {
+    const dest = new URL(toMeta.href, location.href);
+    dest.searchParams.set("via", "transition");
+    location.replace(dest.toString());
+  };
+  if (activeCard && !freeze) {
+    activeCard.addEventListener("click", goToDest);
+    // Pressing Enter on the focused card also advances.
+    activeCard.tabIndex = 0;
+    activeCard.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goToDest(); }
+    });
+  }
+  if (autoMs > 0 && !freeze) setTimeout(goToDest, autoMs);
+</script>
+</body>
+</html>

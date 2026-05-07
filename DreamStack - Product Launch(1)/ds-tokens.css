@@ -1,0 +1,227 @@
+/* ============================================================
+   DreamStack Design System · Colors + Type
+   ============================================================ */
+
+@font-face {
+  font-family: "Geist";
+  src: url("fonts/Geist-VariableFont_wght.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("fonts/GeistMono-VariableFont_wght.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* -- Font families ------------------------------------------ */
+  --font-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+
+  /* -- Neutral scale (the system's spine) --------------------- */
+  /* Used across dark-mode UIs (Catcher/Studio/Factory). */
+  --ink-0:    rgb(10, 10, 10);      /* deepest black */
+  --ink-50:   rgb(18, 18, 18);      /* near-black bg */
+  --ink-100:  rgb(26, 26, 26);      /* canvas bg (app chrome) */
+  --ink-200:  rgb(33, 33, 33);      /* surface / panel */
+  --ink-300:  rgb(38, 38, 38);      /* border */
+  --ink-400:  rgb(50, 50, 50);      /* raised surface / subtle border */
+  --ink-500:  rgb(67, 67, 67);      /* stroke / hairline */
+  --ink-600:  rgb(124, 126, 130);   /* muted text */
+  --ink-700:  rgb(138, 138, 138);   /* secondary text */
+  --ink-800:  rgb(168, 169, 171);   /* tertiary text, icon */
+  --ink-850:  rgb(179, 179, 179);   /* soft stroke */
+  --ink-900:  rgb(199, 200, 201);   /* line / divider on dark */
+  --ink-950:  rgb(217, 217, 217);   /* light placeholder */
+  --ink-975:  rgb(230, 230, 230);   /* near-white surface */
+  --paper:    rgb(242, 242, 242);   /* primary text on dark, paper bg on light */
+  --white:    rgb(255, 255, 255);
+
+  /* -- Brand / action colors --------------------------------- */
+  /* Blue = primary CTA, data, links. */
+  --blue-50:   rgb(233, 242, 255);
+  --blue-100:  rgb(189, 217, 255);
+  --blue-200:  rgb(145, 191, 255);
+  --blue-300:  rgb(101, 165, 255);
+  --blue-400:  rgb(43, 127, 255);
+  --blue-500:  rgb(35, 127, 255);   /* PRIMARY blue */
+  --blue-600:  rgb(25, 89, 178);
+  --blue-700:  rgb(18, 63, 128);
+  --blue-800:  rgb(11, 38, 77);
+  --blue-900:  rgb(4, 13, 26);
+
+  /* Green = success, agents, "alive". */
+  --green-50:  rgb(238, 250, 234);
+  --green-100: rgb(205, 240, 191);
+  --green-200: rgb(171, 231, 148);
+  --green-300: rgb(138, 221, 105);
+  --green-400: rgb(88, 206, 41);
+  --green-500: rgb(61, 144, 29);    /* PRIMARY green (heaviest use) */
+  --green-600: rgb(44, 103, 20);
+  --green-700: rgb(26, 62, 12);
+  --green-800: rgb(19, 45, 9);
+  --green-alt: rgb(0, 201, 80);     /* alt "live" green */
+
+  /* Red = destructive, recording, error. */
+  --red-50:    rgb(252, 235, 235);
+  --red-100:   rgb(245, 195, 195);
+  --red-200:   rgb(239, 155, 155);
+  --red-300:   rgb(233, 115, 115);
+  --red-400:   rgb(223, 55, 55);    /* PRIMARY red */
+  --red-500:   rgb(156, 39, 39);
+  --red-600:   rgb(112, 28, 28);
+  --red-700:   rgb(67, 17, 17);
+
+  /* Yellow = warning, notice. */
+  --yellow-50:  rgb(254, 251, 235);
+  --yellow-100: rgb(251, 244, 194);
+  --yellow-200: rgb(248, 237, 153);
+  --yellow-300: rgb(245, 229, 112);
+  --yellow-400: rgb(240, 218, 51);
+  --yellow-500: rgb(168, 153, 36);
+  --yellow-600: rgb(120, 109, 25);
+  --yellow-700: rgb(72, 66, 15);
+
+  /* Purple = accent, agent variant. */
+  --purple-400: rgb(194, 122, 255);
+  --purple-500: rgb(173, 70, 255);
+
+  /* -- Semantic aliases (dark-mode first) -------------------- */
+  --bg:          var(--ink-100);   /* app background */
+  --bg-elevated: var(--ink-200);   /* cards, panels */
+  --bg-raised:   var(--ink-400);   /* popovers, pressed states */
+  --bg-input:    var(--ink-50);
+
+  --fg:          var(--paper);     /* primary text */
+  --fg-muted:    var(--ink-600);   /* secondary text */
+  --fg-subtle:   var(--ink-500);   /* tertiary / disabled */
+  --fg-inverse:  var(--ink-100);
+
+  --border:       var(--ink-500);
+  --border-soft:  var(--ink-400);
+  --border-faint: var(--ink-300);
+  --focus-ring:   rgba(81, 95, 252, 0.25);
+
+  --accent:         var(--blue-500);
+  --accent-hover:   var(--blue-400);
+  --accent-muted:   var(--blue-700);
+  --success:        var(--green-500);
+  --success-glow:   var(--green-alt);
+  --danger:         var(--red-400);
+  --warning:        var(--yellow-400);
+
+  /* -- Shadows / elevation ---------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 6px -4px rgba(0,0,0,0.1), 0 10px 15px -3px rgba(0,0,0,0.1);
+  --shadow-lg: 0 4px 6px -4px rgba(0,0,0,0.25), 0 16px 24px -8px rgba(0,0,0,0.35);
+  --ring-focus: 0 0 0 3px rgba(81,95,252,0.25);
+
+  /* -- Radii ------------------------------------------------ */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 10px;
+  --r-xl: 12px;
+  --r-2xl: 16px;
+  --r-pill: 999px;
+
+  /* -- Spacing (4px base) ----------------------------------- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+  --s-16: 64px;
+
+  /* -- Type tokens ------------------------------------------- */
+  /* Most of the app lives in the 10-14px range.
+     Sizes above 18 are for splash/marketing. */
+  --t-10: 10px;   --lh-10: 14px;
+  --t-12: 12px;   --lh-12: 16px;
+  --t-14: 14px;   --lh-14: 20px;
+  --t-16: 16px;   --lh-16: 22px;
+  --t-18: 18px;   --lh-18: 24px;
+  --t-20: 20px;   --lh-20: 28px;
+  --t-24: 24px;   --lh-24: 32px;
+  --t-32: 32px;   --lh-32: 40px;
+  --t-40: 40px;   --lh-40: 48px;
+
+  /* Negative tracking mirrors the figma system (-0.010em on most UI). */
+  --track-tight: -0.010em;
+  --track-normal: 0;
+}
+
+/* ==========================================================
+   Base + element defaults
+   ========================================================== */
+html, body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: var(--t-14);
+  line-height: var(--lh-14);
+  letter-spacing: var(--track-tight);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, .h1 {
+  font: 600 var(--t-32)/var(--lh-32) var(--font-sans);
+  letter-spacing: -0.02em;
+  color: var(--fg);
+}
+h2, .h2 {
+  font: 600 var(--t-24)/var(--lh-24) var(--font-sans);
+  letter-spacing: -0.015em;
+  color: var(--fg);
+}
+h3, .h3 {
+  font: 600 var(--t-18)/var(--lh-18) var(--font-sans);
+  letter-spacing: var(--track-tight);
+  color: var(--fg);
+}
+h4, .h4 {
+  font: 500 var(--t-14)/var(--lh-14) var(--font-sans);
+  letter-spacing: var(--track-tight);
+  color: var(--fg);
+}
+p, .body {
+  font: 400 var(--t-14)/var(--lh-14) var(--font-sans);
+  letter-spacing: var(--track-tight);
+  color: var(--fg);
+}
+small, .caption {
+  font: 400 var(--t-12)/var(--lh-12) var(--font-sans);
+  color: var(--fg-muted);
+}
+.eyebrow {
+  font: 500 var(--t-10)/var(--lh-10) var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-muted);
+}
+code, kbd, pre, .mono {
+  font-family: var(--font-mono);
+  font-size: var(--t-12);
+}
+
+/* Utility helpers */
+.u-fg         { color: var(--fg); }
+.u-fg-muted   { color: var(--fg-muted); }
+.u-fg-subtle  { color: var(--fg-subtle); }
+.u-accent     { color: var(--accent); }
+.u-success    { color: var(--success); }
+.u-danger     { color: var(--danger); }
+.u-warning    { color: var(--warning); }
+.u-surface    { background: var(--bg-elevated); }
+.u-card       { background: var(--bg-elevated); border: 1px solid var(--border-soft); border-radius: var(--r-lg); }
+.u-pill       { border-radius: var(--r-pill); }

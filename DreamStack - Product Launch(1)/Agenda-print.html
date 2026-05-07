@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Conquer AI · Series A · Introduction</title>
+<link rel="stylesheet" href="ds-tokens.css"/>
+<style>
+  /* ============================================================
+     Agenda — external-facing one-pager.
+     Prints cleanly to a single A4/Letter page.
+     ============================================================ */
+  :root {
+    /* Light investor-memo palette, built on Conquer's ink scale */
+    --paper-bg:   #F6F3ED;   /* warm cream */
+    --paper-card: #FFFFFF;
+    --ink:        #121212;
+    --ink-mute:   #5E5E5E;
+    --ink-faint:  #9A958B;
+    --rule:       #1F1F1F;
+    --rule-soft:  #D9D3C7;
+    --accent:     #1E2761;   /* deep indigo from Conquer's internal deck */
+    --accent-ink: #0D1130;
+    --serif: "Tiempos", "Charter", "Iowan Old Style", "Georgia", serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    background: var(--paper-bg);
+    color: var(--ink);
+    font-family: "Geist", "Inter", -apple-system, system-ui, sans-serif;
+    letter-spacing: -0.01em;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* --- Page container ------------------------------------------------- */
+  .page {
+    max-width: 900px;
+    margin: 32px auto;
+    background: var(--paper-card);
+    padding: 48px 64px 42px;
+    border: 1px solid var(--rule-soft);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 16px 48px -24px rgba(20,20,20,0.12);
+    position: relative;
+  }
+
+  /* --- Letterhead ----------------------------------------------------- */
+  .letterhead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 26px;
+  }
+  .letterhead .mark {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .letterhead .mark em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .letterhead .meta {
+    text-align: right;
+    font-size: 11px;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-mute);
+    line-height: 1.5;
+  }
+
+  /* --- Title block ---------------------------------------------------- */
+  .title {
+    margin-bottom: 28px;
+  }
+  .title .eyebrow {
+    font-size: 9.5px;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .title h1 {
+    font-family: var(--serif);
+    font-size: 32px;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    font-weight: 400;
+    margin: 0 0 10px;
+    color: var(--ink);
+  }
+  .title h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .title .lede {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink-mute);
+    max-width: 64ch;
+    margin: 0;
+  }
+
+  /* --- Attendees ---------------------------------------------------- */
+  .attendees {
+    padding: 14px 0 16px;
+    border-bottom: 1px solid var(--rule-soft);
+    margin-bottom: 28px;
+  }
+  .attendees .k-row { display: none; }
+  .attendees .roster {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .attendees .person {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .attendees .pn {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .attendees .pr {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-mute);
+  }
+  @media (max-width: 720px) {
+    .attendees .roster { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* --- Info strip (for / prepared by / duration) --------------------- */
+  .info-strip {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+    padding: 14px 0;
+    border-top: 1px solid var(--rule-soft);
+    border-bottom: 1px solid var(--rule-soft);
+    margin-bottom: 0;
+  }
+  .info-strip .cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .info-strip .k {
+    font-size: 9.5px;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-faint);
+  }
+  .info-strip .v {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .info-strip .v[contenteditable="true"]:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* --- Agenda ---------------------------------------------------------- */
+  .section-label { display: none; }
+
+  .agenda {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 28px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 40px 1fr 170px 60px 86px;
+    gap: 18px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    align-items: baseline;
+    position: relative;
+    transition: background-color 0.25s ease;
+  }
+  .row.is-active {
+    background: linear-gradient(to right, rgba(30,39,97,0.06), rgba(30,39,97,0.01) 85%);
+  }
+  .row.is-active::before {
+    content: "";
+    position: absolute;
+    left: -10px;
+    top: 12px;
+    bottom: 12px;
+    width: 2px;
+    background: var(--accent);
+  }
+  .row.is-done .topic .name { color: var(--ink-faint); }
+  .row.is-done .topic .name em { color: var(--ink-faint); }
+  .row.is-done .topic .sub { color: var(--ink-faint); }
+
+  .row .num {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    padding-top: 5px;
+  }
+
+  .row .topic {
+    min-width: 0;
+  }
+  .row .topic .name {
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin-bottom: 3px;
+    font-weight: 400;
+  }
+  .row .topic .name em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .row .topic .sub {
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--ink-mute);
+    letter-spacing: -0.005em;
+    margin-top: 2px;
+  }
+
+  .row .speaker {
+    font-size: 12px;
+    color: var(--ink-mute);
+    letter-spacing: 0.01em;
+    padding-top: 4px;
+    line-height: 1.35;
+  }
+  .row .speaker .role {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-faint);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .row .dur {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--ink);
+    text-align: right;
+    letter-spacing: 0.04em;
+    padding-top: 5px;
+  }
+  .row .dur .unit {
+    color: var(--ink-faint);
+    margin-left: 2px;
+  }
+
+  /* --- Live countdown cell ----------------------------------------- */
+  .row .clock {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 14px;
+    text-align: right;
+    letter-spacing: 0.02em;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+    padding-top: 3px;
+    line-height: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+  .row .clock .t { font-weight: 500; }
+  .row.is-active .clock { color: var(--accent); }
+  .row.is-active .clock .t { font-weight: 600; }
+  .row.is-over .clock { color: var(--danger, #C74040); }
+  .row.is-done .clock .t { color: var(--ink-faint); text-decoration: line-through; text-decoration-thickness: 1px; }
+  .row .clock .tag {
+    font-size: 8.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-faint);
+  }
+  .row.is-active .clock .tag { color: var(--accent); }
+  .row.is-over .clock .tag { color: var(--danger, #C74040); }
+
+  /* --- Call-control bar (screen only) ------------------------------ */
+  .control {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 16px;
+    margin-bottom: 14px;
+    background: var(--paper-bg);
+    border: 1px solid var(--rule-soft);
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  .control .total-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    margin-right: auto;
+  }
+  .control .total {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .control .total.is-running { color: var(--accent); }
+  .control .total-lbl {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-faint);
+  }
+  .control button {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    padding: 8px 13px;
+    border-radius: 4px;
+    border: 1px solid var(--rule);
+    background: white;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .control button:hover { background: var(--ink); color: white; }
+  .control button.primary { background: var(--accent); border-color: var(--accent); color: white; }
+  .control button.primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+  .control button.danger:hover { background: var(--danger, #C74040); border-color: var(--danger, #C74040); }
+  .control .now {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-mute);
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+    flex: 1 1 auto;
+  }
+  .control .now b { color: var(--accent); font-weight: 500; }
+  @media print { .control { display: none; } }
+
+  /* Distinct visual beat for Q&A — the "turn it back to them" moment */
+  .row.qa {
+    background: linear-gradient(to right, rgba(30,39,97,0.035), transparent 70%);
+  }
+  .row.qa .topic .name em { color: var(--accent); }
+
+  /* --- Footer ---------------------------------------------------------- */
+  .foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+  }
+  .foot .note {
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--ink-mute);
+    max-width: 56ch;
+  }
+  .foot .note strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .foot .sig {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-faint);
+    text-align: right;
+    line-height: 1.8;
+    white-space: nowrap;
+  }
+
+  /* --- Editable hint (screen only) ----------------------------------- */
+  .edit-hint {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-faint);
+    background: rgba(255,255,255,0.9);
+    border: 1px solid var(--rule-soft);
+    padding: 8px 12px;
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+  }
+
+  /* --- Print ----------------------------------------------------------- */
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  @media print {
+    body { background: white; }
+    .page {
+      margin: 0;
+      max-width: none;
+      width: 100%;
+      min-height: 100vh;
+      padding: 28px 40px 22px;
+      border: none;
+      box-shadow: none;
+    }
+    .edit-hint { display: none; }
+    .control { display: none; }
+    .clock { display: none !important; }
+    .row { grid-template-columns: 40px 1fr 150px 64px; padding: 9px 0; }
+    .title { margin-bottom: 18px; }
+    .title h1 { font-size: 28px; }
+    .info-strip { padding: 8px 0; margin-bottom: 14px; }
+    .agenda { margin-bottom: 16px; }
+    .attendees { padding: 8px 0 10px; margin-bottom: 14px; }
+    .letterhead { margin-bottom: 14px; }
+  }
+
+  @media (max-width: 720px) {
+    .page { margin: 0; padding: 32px 24px; border: none; }
+    .row { grid-template-columns: 32px 1fr; gap: 14px; }
+    .row .speaker, .row .dur, .row .clock { grid-column: 2; padding-top: 0; text-align: left; align-items: flex-start; flex-direction: row; gap: 10px; }
+    .info-strip { grid-template-columns: 1fr; gap: 10px; }
+    .letterhead { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .letterhead .meta { text-align: left; }
+    .title h1 { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<main class="page">
+
+  <!-- Letterhead -->
+  <header class="letterhead">
+    <div class="mark">Conquer<em> AI</em></div>
+    <div class="meta">
+      Series A · Introduction<br/>
+      Prepared April 2026
+    </div>
+  </header>
+
+  <!-- Title -->
+  <section class="title">
+    <div class="eyebrow">Today's Conversation</div>
+    <h1>A <em>30-minute</em> introduction to Conquer AI and DreamStack.</h1>
+  </section>
+
+  <!-- Info strip + attendees (combined) -->
+  <section class="info-strip" aria-label="Meeting details">
+    <div class="cell">
+      <span class="k">Prepared for</span>
+      <span class="v" contenteditable="true" spellcheck="false">a16z</span>
+    </div>
+    <div class="cell">
+      <span class="k">Duration</span>
+      <span class="v">30 minutes</span>
+    </div>
+  </section>
+
+  <!-- Attendees -->
+  <section class="attendees" aria-label="From Conquer AI">
+    <div class="roster">
+      <div class="person"><span class="pn">Jeremy Amias</span><span class="pr">Chairman</span></div>
+      <div class="person"><span class="pn">Jonny Ward</span><span class="pr">Co-founder &middot; CEO</span></div>
+      <div class="person"><span class="pn">Thomas Buckley</span><span class="pr">Co-founder &middot; CTAIO</span></div>
+      <div class="person"><span class="pn">Dan Moon</span><span class="pr">Co-founder &middot; CFO</span></div>
+    </div>
+  </section>
+
+  <!-- Agenda -->
+  <div class="section-label">Agenda</div>
+
+  <!-- Call control (screen only) -->
+  <div class="control" role="group" aria-label="Call timer">
+    <div class="total-stack">
+      <div class="total-lbl">Remaining</div>
+      <div class="total" id="total-clock">30:00</div>
+    </div>
+    <div class="now" id="now-lbl">&nbsp;</div>
+    <button id="btn-start" class="primary">Start call</button>
+    <button id="btn-next" style="display:none">Next section</button>
+    <button id="btn-reset" class="danger" style="display:none">Reset</button>
+  </div>
+
+  <ol class="agenda">
+
+    <li class="row" data-dur="2">
+      <div class="num">01</div>
+      <div class="topic">
+        <div class="name">Welcome &amp; <em>introductions</em></div>
+        <div class="sub">Who's in the room, and what we're hoping to get out of the next half hour.</div>
+      </div>
+      <div class="speaker"><span class="role">Lead</span>Jonny Ward</div>
+      <div class="dur">2<span class="unit">min</span></div>
+      <div class="clock"><span class="t">2:00</span><span class="tag">Pending</span></div>
+    </li>
+
+    <li class="row" data-dur="3">
+      <div class="num">02</div>
+      <div class="topic">
+        <div class="name">The <em>thesis</em> — why now</div>
+        <div class="sub">End-state vision — becoming the global leader in building AI-native companies.</div>
+      </div>
+      <div class="speaker"><span class="role">Lead</span>Jonny Ward<br/>Thomas Buckley</div>
+      <div class="dur">3<span class="unit">min</span></div>
+      <div class="clock"><span class="t">3:00</span><span class="tag">Pending</span></div>
+    </li>
+
+    <li class="row" data-dur="8">
+      <div class="num">03</div>
+      <div class="topic">
+        <div class="name"><em>DreamStack</em> — the product</div>
+        <div class="sub">A live walkthrough of the three-stage platform: Dream Capture, Dream Studio, Dream Factory.</div>
+      </div>
+      <div class="speaker"><span class="role">Lead</span>Tom Buckley</div>
+      <div class="dur">8<span class="unit">min</span></div>
+      <div class="clock"><span class="t">8:00</span><span class="tag">Pending</span></div>
+    </li>
+
+    <li class="row" data-dur="4">
+      <div class="num">04</div>
+      <div class="topic">
+        <div class="name">Traction &amp; the <em>advisory network</em></div>
+        <div class="sub">Where pipeline comes from, what the board-level advisor model unlocks, and how it compounds.</div>
+      </div>
+      <div class="speaker"><span class="role">Lead</span>Jonny Ward<br/>Jeremy Amias</div>
+      <div class="dur">4<span class="unit">min</span></div>
+      <div class="clock"><span class="t">4:00</span><span class="tag">Pending</span></div>
+    </li>
+
+    <li class="row" data-dur="5">
+      <div class="num">05</div>
+      <div class="topic">
+        <div class="name">Business model, <em>financials</em> &amp; the ask</div>
+        <div class="sub">Three-tier pricing, unit economics, path to profitability, and what a lead position looks like at this stage.</div>
+      </div>
+      <div class="speaker"><span class="role">Lead</span>Dan Moon<br/>Jonny Ward</div>
+      <div class="dur">5<span class="unit">min</span></div>
+      <div class="clock"><span class="t">5:00</span><span class="tag">Pending</span></div>
+    </li>
+
+    <li class="row qa" data-dur="6">
+      <div class="num">06</div>
+      <div class="topic">
+        <div class="name">Your <em>questions</em> &amp; discussion</div>
+        <div class="sub">The most valuable part of the call. Interrupt earlier if something demands it.</div>
+      </div>
+      <div class="speaker"><span class="role">Open</span>All three</div>
+      <div class="dur">6<span class="unit">min</span></div>
+      <div class="clock"><span class="t">6:00</span><span class="tag">Pending</span></div>
+    </li>
+
+    <li class="row" data-dur="2">
+      <div class="num">07</div>
+      <div class="topic">
+        <div class="name">Next <em>steps</em></div>
+        <div class="sub">Materials to follow, how the close process is structured, and a proposed date for a deep-dive.</div>
+      </div>
+      <div class="speaker"><span class="role">Close</span>Jonny Ward</div>
+      <div class="dur">2<span class="unit">min</span></div>
+      <div class="clock"><span class="t">2:00</span><span class="tag">Pending</span></div>
+    </li>
+
+  </ol>
+
+  <!-- Footer -->
+  <footer class="foot">
+    <div class="note">
+      <strong>A note on format.</strong> We won't be militant about the running order — if a thread is worth pulling on, we'll pull on it. The structure is here to make the most of the thirty minutes, not to constrain the conversation.
+    </div>
+    <div class="sig">
+      Conquer AI<br/>
+      Series A · 2026
+    </div>
+  </footer>
+
+</main>
+
+<div class="edit-hint"><span style="cursor:pointer" onclick="window.print()">Print / Save PDF</span></div>
+
+<script>
+(function(){
+  const rows = Array.from(document.querySelectorAll('.row'));
+  const totalEl = document.getElementById('total-clock');
+  const nowEl = document.getElementById('now-lbl');
+  const btnStart = document.getElementById('btn-start');
+  const btnNext = document.getElementById('btn-next');
+  const btnReset = document.getElementById('btn-reset');
+
+  // State: one remaining-seconds budget per row. Never auto-advances.
+  // User clicks Next to move on, so spill-over is visible (goes negative in red).
+  const budgets = rows.map(r => parseInt(r.dataset.dur, 10) * 60);
+  let remaining = budgets.slice();
+  let activeIdx = -1;   // -1 = not started
+  let running = false;
+  let tickHandle = null;
+  let lastScrolledIdx = -1;
+
+  function scrollActiveIntoView(idx) {
+    if (idx < 0 || idx >= rows.length) return;
+    if (idx === lastScrolledIdx) return;
+    lastScrolledIdx = idx;
+    const row = rows[idx];
+    const rect = row.getBoundingClientRect();
+    // Target: row sits ~32% from top of viewport (just below the control bar)
+    const targetTop = Math.max(40, window.innerHeight * 0.32);
+    const delta = rect.top - targetTop;
+    window.scrollBy({ top: delta, behavior: 'smooth' });
+  }
+
+  const fmt = (s) => {
+    const neg = s < 0;
+    const abs = Math.abs(s);
+    const m = Math.floor(abs / 60);
+    const sec = abs % 60;
+    return (neg ? '+' : '') + m + ':' + String(sec).padStart(2, '0');
+  };
+
+  function render(){
+    rows.forEach((r, i) => {
+      const clock = r.querySelector('.clock');
+      const t = clock.querySelector('.t');
+      const tag = clock.querySelector('.tag');
+      r.classList.remove('is-active','is-done','is-over');
+      if (i < activeIdx) {
+        r.classList.add('is-done');
+        t.textContent = '—';
+        tag.textContent = 'Done';
+      } else if (i === activeIdx) {
+        r.classList.add('is-active');
+        if (remaining[i] < 0) r.classList.add('is-over');
+        t.textContent = fmt(remaining[i]);
+        tag.textContent = remaining[i] < 0 ? 'Over' : (running ? 'Live' : 'Paused');
+      } else {
+        t.textContent = fmt(remaining[i]);
+        tag.textContent = 'Pending';
+      }
+    });
+
+    // Total = sum of remaining from activeIdx onward (clamped at 0 for the overall countdown)
+    let totalRem;
+    if (activeIdx < 0) {
+      totalRem = budgets.reduce((a,b)=>a+b,0);
+    } else {
+      totalRem = remaining.slice(activeIdx).reduce((a,b)=>a+b,0);
+    }
+    totalEl.textContent = fmt(totalRem);
+    totalEl.classList.toggle('is-running', running);
+
+    // Now label
+    if (activeIdx < 0) {
+      nowEl.innerHTML = '&nbsp;';
+      btnStart.textContent = 'Start call';
+      btnStart.classList.add('primary');
+      btnNext.disabled = true;
+      btnNext.style.opacity = 0.45;
+    } else if (activeIdx >= rows.length) {
+      nowEl.innerHTML = 'Call complete.';
+      btnStart.textContent = 'Start call';
+      btnStart.classList.add('primary');
+      btnNext.disabled = true;
+      btnNext.style.opacity = 0.45;
+    } else {
+      const name = rows[activeIdx].querySelector('.topic .name').textContent.trim();
+      nowEl.innerHTML = (running ? 'Live · ' : 'Paused · ') + '<b>' + (activeIdx + 1).toString().padStart(2,'0') + '</b> · ' + name;
+      btnStart.textContent = running ? 'Pause' : 'Resume';
+      btnStart.classList.toggle('primary', !running);
+      btnNext.disabled = false;
+      btnNext.style.opacity = 1;
+    }
+  }
+
+  function tick(){
+    if (!running || activeIdx < 0 || activeIdx >= rows.length) return;
+    remaining[activeIdx] -= 1;
+    render();
+  }
+
+  function startTicker(){
+    clearInterval(tickHandle);
+    tickHandle = setInterval(tick, 1000);
+  }
+  function stopTicker(){ clearInterval(tickHandle); tickHandle = null; }
+
+  btnStart.addEventListener('click', () => {
+    if (activeIdx < 0) {
+      activeIdx = 0;
+      running = true;
+      startTicker();
+    } else if (activeIdx >= rows.length) {
+      // Call complete — do nothing; use Reset.
+      return;
+    } else {
+      running = !running;
+      if (running) startTicker(); else stopTicker();
+    }
+    render();
+    scrollActiveIntoView(activeIdx);
+  });
+
+  btnNext.addEventListener('click', () => {
+    if (activeIdx < 0 || activeIdx >= rows.length) return;
+    activeIdx += 1;
+    if (activeIdx >= rows.length) {
+      running = false;
+      stopTicker();
+    }
+    render();
+    scrollActiveIntoView(activeIdx);
+  });
+
+  btnReset.addEventListener('click', () => {
+    running = false;
+    stopTicker();
+    activeIdx = -1;
+    lastScrolledIdx = -1;
+    remaining = budgets.slice();
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // Click a row to jump to it (skips forward, marking earlier rows done).
+  rows.forEach((r, i) => {
+    r.addEventListener('click', (e) => {
+      // Don't jump when clicking inside editable cells
+      if (e.target.closest('[contenteditable]')) return;
+      if (i === activeIdx) return;
+      activeIdx = i;
+      if (!running) { running = true; startTicker(); }
+      render();
+      scrollActiveIntoView(i);
+    });
+    r.style.cursor = 'pointer';
+  });
+
+  // Keyboard: space = start/pause, N = next, R = reset
+  document.addEventListener('keydown', (e) => {
+    if (e.target.isContentEditable) return;
+    if (e.code === 'Space') { e.preventDefault(); btnStart.click(); }
+    else if (e.key === 'n' || e.key === 'N') { btnNext.click(); }
+    else if (e.key === 'r' || e.key === 'R') { btnReset.click(); }
+  });
+
+  render();
+})();
+</script>
+
+<script>
+// Auto-print when everything is ready
+(async function(){
+  try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch(e){}
+  await new Promise(r => setTimeout(r, 500));
+  window.print();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Handoff Screen Preview</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: #0d0d0f;
+    font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+    color: #fff;
+    overflow: hidden;
+  }
+
+  /* Full-viewport container */
+  .handoff-overlay {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #0d0d0f;
+  }
+
+  /* ---- Animated halftone dot field ---- */
+  .dc-bgdots {
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    overflow: hidden;
+  }
+  .dc-bgdots::after {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,.32) 1px, transparent 1.6px);
+    background-size: 14px 14px;
+    mask-image:
+      linear-gradient(to bottom, transparent 50%, #000 88%, #000 100%),
+      radial-gradient(ellipse 70% 60% at 50% 100%, #000 30%, transparent 95%);
+    mask-composite: intersect;
+    -webkit-mask-image:
+      linear-gradient(to bottom, transparent 50%, #000 88%, #000 100%),
+      radial-gradient(ellipse 70% 60% at 50% 100%, #000 30%, transparent 95%);
+    -webkit-mask-composite: source-in;
+    animation: dc-dots-fade 6s ease-in-out infinite;
+    opacity: .4;
+  }
+  @keyframes dc-dots-fade {
+    0%, 100% { opacity: .3; }
+    50%       { opacity: .55; }
+  }
+  .dc-bgdots::before {
+    content: "";
+    position: absolute;
+    width: 50%; height: 70%;
+    left: 25%; bottom: -10%;
+    background: radial-gradient(circle, rgba(255,255,255,.16) 0%, rgba(255,255,255,.07) 35%, transparent 65%);
+    filter: blur(28px);
+    animation: dc-glow-wave 10s ease-in-out infinite;
+    mix-blend-mode: screen;
+    z-index: 1;
+  }
+  @keyframes dc-glow-wave {
+    0%   { transform: translate(-50%, 0);   opacity: .6; }
+    25%  { transform: translate(-15%, -8%); opacity: .95; }
+    50%  { transform: translate(20%, 4%);   opacity: .8; }
+    75%  { transform: translate(45%, -6%);  opacity: .95; }
+    100% { transform: translate(-50%, 0);   opacity: .6; }
+  }
+
+  /* ---- Central column ---- */
+  .handoff-center {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 20px;
+  }
+
+  /* ---- Outer frosted card ---- */
+  .handoff-outer-card {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 24px;
+    background: linear-gradient(180deg, rgba(26,26,30,.88) 0%, rgba(18,18,22,.88) 100%);
+    border: 1px solid rgba(255,255,255,.055);
+    border-radius: 18px;
+    padding: 40px 52px 36px;
+    box-shadow: 0 32px 90px rgba(0,0,0,.5);
+    backdrop-filter: blur(10px);
+  }
+
+  /* ---- Header ---- */
+  .handoff-header {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 14px;
+  }
+  .handoff-done-label {
+    font-size: 15px;
+    color: rgba(200,205,212,.75);
+    letter-spacing: -0.01em;
+  }
+  .handoff-brand-pill {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: #111215;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    padding: 11px 22px;
+    color: #E6E8EB;
+    font-size: 17px; font-weight: 600;
+    letter-spacing: -0.02em;
+    box-shadow: 0 4px 16px rgba(0,0,0,.35);
+  }
+  .handoff-brand-logo { height: 28px; width: auto; display: block; }
+
+  /* ---- Inner project card — dashed amber border ---- */
+  .handoff-card {
+    width: 356px;
+    background: #0f1014;
+    border: 1.5px dashed rgba(163,142,60,.55);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---- Folder tabs row ---- */
+  .handoff-tabs {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    padding: 14px 0 0 14px;
+    gap: 0;
+    flex-shrink: 0;
+  }
+  .handoff-tab {
+    height: 46px;
+    border-radius: 9px 9px 0 0;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .handoff-tab:nth-child(1) { z-index: 4; width: 96px;  margin-right: -7px; }
+  .handoff-tab:nth-child(2) { z-index: 3; width: 92px;  margin-right: -7px; }
+  .handoff-tab:nth-child(3) { z-index: 2; width: 105px; margin-right: -7px; }
+  .handoff-tab:nth-child(4) { z-index: 1; flex: 1; border-radius: 9px 0 0 0; }
+
+  /* ---- Card body — sits below the tabs ---- */
+  .handoff-card-body {
+    background: #1a1b1f;
+    border-radius: 0;
+    flex: 1;
+    min-height: 155px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  /* ---- Card meta ---- */
+  .handoff-card-meta {
+    padding: 16px 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .handoff-project-name {
+    font-size: 13px; line-height: 1.45;
+    color: #C0C6CE; font-weight: 500;
+  }
+  .handoff-company {
+    font-size: 12px;
+    color: rgba(107,114,128,.85);
+  }
+
+  /* ---- Converting label ---- */
+  .handoff-converting {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Geist Mono', 'SF Mono', ui-monospace, monospace;
+    font-size: 12px;
+    color: #A3924A;
+    letter-spacing: .07em;
+  }
+  .handoff-spinner {
+    color: #A3924A;
+    animation: spin 1.2s linear infinite;
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+
+<div class="handoff-overlay">
+  <div class="dc-bgdots" aria-hidden="true"></div>
+
+  <div class="handoff-center">
+    <div class="handoff-outer-card">
+
+      <div class="handoff-header">
+        <span class="handoff-done-label">Your dream session is done</span>
+        <div class="handoff-brand-pill">
+          <img src="assets/dreamcatcher-logo.png" alt="DreamCatcher" class="handoff-brand-logo" />
+        </div>
+      </div>
+
+      <div class="handoff-card">
+        <div class="handoff-tabs">
+          <div class="handoff-tab" style="background:#92400E;"></div>
+          <div class="handoff-tab" style="background:#7C3AED;"></div>
+          <div class="handoff-tab" style="background:#16A34A;"></div>
+          <div class="handoff-tab" style="background:#2563EB;"></div>
+        </div>
+        <div class="handoff-card-body">
+          <div class="handoff-card-meta">
+            <div class="handoff-project-name">Order Fulfilment Discovery Company:<br>E-Commerce Platform Redesign</div>
+            <div class="handoff-company">TechCorp</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="handoff-converting">
+      <svg class="handoff-spinner" viewBox="0 0 24 24" fill="none" width="14" height="14">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="40 20" stroke-linecap="round"/>
+      </svg>
+      Converting ...
+    </div>
+  </div>
+</div>
+
+<script>
+  // Scale frame to fit viewport
+  (function(){
+    var frame = document.getElementById('frame');
+    if (!frame) return;
+    function fit(){
+      var s = Math.min(window.innerWidth/1440, window.innerHeight/872);
+      frame.style.transform = 'scale('+s+')';
+    }
+    fit(); window.addEventListener('resize', fit);
+  })();
+</script>
+
+</body>
+</html>
