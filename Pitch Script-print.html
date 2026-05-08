@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Conquer AI · Series A · Pitch Script · Internal</title>
+<link rel="stylesheet" href="ds-tokens.css"/>
+<style>
+  /* ============================================================
+     Internal pitch script — matches Agenda's paper/type DNA.
+     Print-first. Section-per-agenda-item. Not for external eyes.
+     ============================================================ */
+  :root {
+    --paper-bg:   #F6F3ED;
+    --paper-card: #FFFFFF;
+    --ink:        #121212;
+    --ink-mute:   #5E5E5E;
+    --ink-faint:  #9A958B;
+    --rule:       #1F1F1F;
+    --rule-soft:  #D9D3C7;
+    --rule-hair:  #E9E4D8;
+    --accent:     #1E2761;
+    --accent-ink: #0D1130;
+    --internal:   #9E2B1F;     /* oxblood red — internal-only marker */
+    --internal-bg:#F7E9E6;
+    --highlight:  #FFF3C4;     /* cream highlight for 'land this line' */
+    --serif: "Tiempos", "Charter", "Iowan Old Style", "Georgia", serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    background: var(--paper-bg);
+    color: var(--ink);
+    font-family: "Geist", "Inter", -apple-system, system-ui, sans-serif;
+    letter-spacing: -0.01em;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* --- Page container ------------------------------------------------- */
+  .page {
+    max-width: 940px;
+    margin: 32px auto;
+    background: var(--paper-card);
+    padding: 48px 64px 56px;
+    border: 1px solid var(--rule-soft);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 16px 48px -24px rgba(20,20,20,0.12);
+    position: relative;
+  }
+
+  /* Internal-only stamp corner flag */
+  .page::before {
+    content: "INTERNAL · DO NOT SHARE";
+    position: absolute;
+    top: 14px;
+    right: -2px;
+    background: var(--internal);
+    color: #fff;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    padding: 5px 14px 5px 12px;
+    font-weight: 500;
+  }
+
+  /* --- Letterhead ----------------------------------------------------- */
+  .letterhead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 26px;
+  }
+  .letterhead .mark {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .letterhead .mark em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .letterhead .meta {
+    text-align: right;
+    font-size: 11px;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-mute);
+    line-height: 1.5;
+  }
+
+  /* --- Title block ---------------------------------------------------- */
+  .title { margin-bottom: 26px; }
+  .title .eyebrow {
+    font-size: 9.5px;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .title h1 {
+    font-family: var(--serif);
+    font-size: 34px;
+    line-height: 1.06;
+    letter-spacing: -0.02em;
+    font-weight: 400;
+    margin: 0 0 10px;
+    color: var(--ink);
+  }
+  .title h1 em { font-style: italic; color: var(--accent); }
+  .title .lede {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink-mute);
+    max-width: 68ch;
+    margin: 0;
+  }
+
+  /* --- How-to strip --------------------------------------------------- */
+  .howto {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    padding: 14px 0;
+    border-top: 1px solid var(--rule-soft);
+    border-bottom: 1px solid var(--rule-soft);
+    margin: 0 0 30px;
+  }
+  .howto .cell { display: flex; flex-direction: column; gap: 5px; }
+  .howto .k {
+    font-size: 9.5px;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-faint);
+  }
+  .howto .v {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+
+  /* --- Section ------------------------------------------------------- */
+  .sect {
+    padding: 22px 0 26px;
+    border-top: 1px solid var(--rule);
+    page-break-inside: avoid;
+  }
+  .sect:last-of-type { border-bottom: 1px solid var(--rule); }
+  .sect-head {
+    display: grid;
+    grid-template-columns: 40px 1fr 170px 80px;
+    gap: 18px;
+    align-items: baseline;
+    margin-bottom: 14px;
+  }
+  .sect-head .num {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    padding-top: 6px;
+  }
+  .sect-head .name {
+    font-family: var(--serif);
+    font-size: 22px;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    font-weight: 400;
+  }
+  .sect-head .name em { font-style: italic; color: var(--accent); }
+  .sect-head .lead {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-mute);
+    line-height: 1.5;
+  }
+  .sect-head .lead strong {
+    display: block;
+    font-weight: 500;
+    color: var(--ink);
+    font-size: 12.5px;
+    font-family: "Geist", "Inter", sans-serif;
+    letter-spacing: -0.005em;
+    text-transform: none;
+    margin-top: 2px;
+  }
+  .sect-head .dur {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 13px;
+    color: var(--ink);
+    text-align: right;
+    letter-spacing: 0.02em;
+    padding-top: 4px;
+  }
+  .sect-head .dur .unit {
+    font-size: 10px;
+    color: var(--ink-faint);
+    margin-left: 2px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  /* --- Body columns --------------------------------------------------- */
+  .sect-body {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 18px;
+  }
+  .sect-body > .spacer {}
+  .sect-body > .content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+  @media (max-width: 780px) {
+    .sect-body > .content { grid-template-columns: 1fr; gap: 22px; }
+  }
+
+  .block { }
+  .block .lbl {
+    font-size: 9.5px;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-faint);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--rule-hair);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .block .lbl .lbl-aside {
+    font-size: 9px;
+    color: var(--ink-faint);
+    opacity: 0.7;
+    letter-spacing: 0.12em;
+  }
+  .block ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0;
+  }
+  .block li {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink);
+    margin-bottom: 7px;
+    padding-left: 16px;
+    position: relative;
+    letter-spacing: -0.005em;
+  }
+  .block li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--ink-faint);
+  }
+  .block li em {
+    font-style: italic;
+    color: var(--accent);
+    font-family: var(--serif);
+  }
+  .block li b {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* Verbatim pull-quote — the line you actually say */
+  .say {
+    font-family: var(--serif);
+    font-size: 15px;
+    line-height: 1.45;
+    font-style: italic;
+    color: var(--ink);
+    padding: 10px 0 10px 14px;
+    margin: 10px 0;
+    border-left: 2px solid var(--accent);
+    letter-spacing: -0.005em;
+  }
+  .say::before {
+    content: "\"";
+    opacity: 0.4;
+  }
+  .say::after {
+    content: "\"";
+    opacity: 0.4;
+  }
+  .say.land {
+    background: linear-gradient(to right, var(--highlight), transparent 90%);
+    padding: 12px 14px;
+  }
+
+  /* Stage direction — parenthetical, small-caps */
+  .stage {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--internal);
+    margin: 10px 0 6px;
+    line-height: 1.5;
+  }
+  .stage::before {
+    content: "► ";
+    font-size: 10px;
+  }
+
+  /* Objection block */
+  .obj {
+    border-top: 1px dashed var(--rule-hair);
+    margin-top: 14px;
+    padding-top: 12px;
+  }
+  .obj .q {
+    font-family: var(--serif);
+    font-size: 13px;
+    font-style: italic;
+    color: var(--ink);
+    margin-bottom: 4px;
+    letter-spacing: -0.005em;
+  }
+  .obj .q::before {
+    content: "Q. ";
+    font-style: normal;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    color: var(--ink-faint);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    margin-right: 3px;
+  }
+  .obj .a {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--ink-mute);
+  }
+  .obj .a::before {
+    content: "A. ";
+    font-family: "Geist Mono", ui-monospace, monospace;
+    color: var(--ink-faint);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    margin-right: 3px;
+  }
+
+  /* Full-width blocks inside content */
+  .block.wide { grid-column: 1 / -1; }
+
+  /* Appendix / footer matter */
+  .appendix {
+    margin-top: 36px;
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+  }
+  .appendix h2 {
+    font-family: var(--serif);
+    font-size: 20px;
+    letter-spacing: -0.015em;
+    font-weight: 400;
+    margin: 0 0 14px;
+  }
+  .appendix h2 em { font-style: italic; color: var(--accent); }
+  .appendix .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+  @media (max-width: 780px) {
+    .appendix .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  /* Key numbers strip */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    padding: 16px 0;
+    border-top: 1px solid var(--rule-soft);
+    border-bottom: 1px solid var(--rule-soft);
+    margin: 18px 0 24px;
+  }
+  .stats .s { display: flex; flex-direction: column; gap: 4px; }
+  .stats .s .n {
+    font-family: var(--serif);
+    font-size: 24px;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .stats .s .l {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-mute);
+    line-height: 1.4;
+  }
+
+  /* Footer note */
+  .foot-note {
+    margin-top: 18px;
+    font-size: 11px;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+
+  /* --- Print ---------------------------------------------------------- */
+  @media print {
+    html, body { background: #fff; }
+    .page {
+      margin: 0;
+      max-width: none;
+      border: 0;
+      box-shadow: none;
+      padding: 22mm 20mm;
+    }
+    .page::before {
+      top: 6mm;
+      right: 6mm;
+      border-radius: 0;
+    }
+    .print-hint { display: none; }
+    .sect { page-break-inside: avoid; }
+    .appendix { page-break-before: auto; }
+  }
+
+  .print-hint {
+    max-width: 940px;
+    margin: 0 auto 24px;
+    padding: 8px 16px;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: right;
+  }
+  .print-hint span {
+    cursor: pointer;
+    color: var(--ink-mute);
+    border-bottom: 1px solid var(--rule-soft);
+    padding-bottom: 2px;
+  }
+  .print-hint span:hover { color: var(--ink); }
+</style>
+</head>
+
+<body>
+
+<main class="page">
+
+  <!-- ==================================================================
+       Letterhead + title
+       ================================================================== -->
+  <header class="letterhead">
+    <div class="mark">Conquer <em>AI</em></div>
+    <div class="meta">
+      Pitch Script · v1<br/>
+      Internal · Presenters only
+    </div>
+  </header>
+
+  <div class="title">
+    <div class="eyebrow">Series A · Introduction Call</div>
+    <h1>The thirty-minute <em>pitch</em>, section by section.</h1>
+    <p class="lede">
+      Talk-track for Jonny, Tom, Dan and Jeremy. Not a script to memorise — key points, the
+      lines we want to actually land, who takes the hand-off, and the questions partners will
+      push on. Twenty-four minutes of content, six for their questions. If they interrupt
+      early, let them — Q&amp;A is a flex buffer and reclaims whatever we run over.
+    </p>
+  </div>
+
+  <!-- How to use -->
+  <div class="howto">
+    <div class="cell">
+      <span class="k">How to use</span>
+      <span class="v">Bullets are the spine. Italic lines in quotes are the phrasing we've workshopped — say it or something close to it.</span>
+    </div>
+    <div class="cell">
+      <span class="k">Stage direction</span>
+      <span class="v">Red arrows (►) mark hand-offs, screen-share cues, and delivery notes. Follow them — the rhythm matters.</span>
+    </div>
+    <div class="cell">
+      <span class="k">Rules of the room</span>
+      <span class="v">No slides until the DreamStack walkthrough — that is the only visual. Q&amp;A (06) is our flex buffer: time we save earlier rolls into it; time we borrow gets reclaimed from it.</span>
+    </div>
+  </div>
+
+  <!-- ==================================================================
+       01 — Welcome & introductions (2 min)
+       ================================================================== -->
+  <section class="sect">
+    <div class="sect-head">
+      <div class="num">01</div>
+      <div class="name">Welcome &amp; <em>introductions</em></div>
+      <div class="lead">Lead<strong>Jonny Ward</strong></div>
+      <div class="dur">2<span class="unit">min</span></div>
+    </div>
+    <div class="sect-body">
+      <div class="spacer"></div>
+      <div class="content">
+
+        <div class="block">
+          <div class="lbl">Talk track</div>
+          <ul>
+            <li>Warm open, acknowledge their time. Name who's in the room and why — <b>one sentence per person</b>, not a CV.</li>
+            <li>Set the shape of the call out loud: twenty minutes of us, ten of them. Invite interruption early and often.</li>
+            <li>Flag that we'll share one screen once — the DreamStack walkthrough. Everything else is conversation.</li>
+            <li>Don't over-explain the intros. Partners have read the teaser. The goal is to get to the <em>thesis</em> fast.</li>
+          </ul>
+          <div class="stage">Jonny opens. Quick round-table: Tom, Dan, Jeremy each say one line — their role + the part of the call they'll lead.</div>
+        </div>
+
+        <div class="block">
+          <div class="lbl">Say it like this</div>
+          <div class="say land">Thanks for making time. We've structured the next half hour so you get the full picture in twenty minutes, with ten at the end for questions. Interrupt whenever something lands — or doesn't.</div>
+          <div class="say">I'm Jonny, CEO. With me are Tom on the tech, Dan on the numbers, and Jeremy — our chairman — who'll come in on the advisory network.</div>
+          <div class="stage">Smile. Don't rush. Let the room settle before Jonny opens the thesis and hands to Tom for the market-shift beat.</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================================
+       02 — Thesis (3 min)
+       ================================================================== -->
+  <section class="sect">
+    <div class="sect-head">
+      <div class="num">02</div>
+      <div class="name">The <em>thesis</em> — why now</div>
+      <div class="lead">Lead<strong>Jonny Ward &amp; Tom Buckley</strong></div>
+      <div class="dur">3<span class="unit">min</span></div>
+    </div>
+    <div class="sect-body">
+      <div class="spacer"></div>
+      <div class="content">
+
+        <div class="block">
+          <div class="lbl">Talk track</div>
+          <ul>
+            <li>Name the market shift in one line: <b>every enterprise is being asked to become AI-native, and almost none of them know how.</b> That gap is the opportunity.</li>
+            <li>The infrastructure layer for this shift is being chosen <b>now</b> — not in three years. Whoever owns the rails for the next eighteen months defines the category.</li>
+            <li>Existing "AI platforms" are either model wrappers (no moat) or consulting shops (no scale). Neither is the shape of the winner.</li>
+            <li>The winner looks like <em>DreamStack</em>: a product that captures intent, turns it into a running system, and compounds with every deployment.</li>
+            <li>Close the section on urgency. <b>The window is eighteen months.</b> After that, the enterprise buyers have picked their platform and the story is distribution, not innovation.</li>
+          </ul>
+          <div class="stage">Jonny opens with the market shift and urgency. Tom takes the second half — why existing "AI platforms" fail and the shape of the winner — so partners hear the CTO name the category, not just the CEO. Slow down. Don't hedge. If you feel yourself qualifying, stop and re-assert.</div>
+        </div>
+
+        <div class="block">
+          <div class="lbl">Say it like this</div>
+          <div class="say land">Every enterprise on earth has been handed a mandate to become AI-native. Almost none of them know how. That gap — between the mandate and the method — is a generational infrastructure opportunity, and the rails are getting chosen in the next eighteen months.</div>
+          <div class="say">The market has two flavours of answer today: thin wrappers on top of someone else's model, and consulting shops dressed up as platforms. Neither scales. The winner is a product company that owns the path from intent to running system. That's what we've built.</div>
+          <div class="stage">Jonny lands the <em>eighteen months</em> line and pauses — then hands to Tom for the "two flavours" beat. Tom: speak as the builder, not the salesman. If a partner nods, you've sold the urgency — move on.</div>
+
+          <div class="obj">
+            <div class="q">Why is the window eighteen months, specifically?</div>
+            <div class="a">Enterprise procurement cycles for platform decisions are 12–18 months. The Fortune 2000 are mid-cycle now. By FY26 those choices are signed and the buying pattern flips from evaluation to expansion.</div>
+          </div>
+          <div class="obj">
+            <div class="q">Isn't OpenAI / Anthropic / the hyperscalers going to eat this?</div>
+            <div class="a">They own the model and the compute. They don't own the enterprise implementation layer — and they've shown no appetite to. Every platform win in the last cycle was the company sitting on top of the primitive, not the primitive itself. Snowflake on top of S3, Stripe on top of card rails. Same pattern.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================================
+       03 — DreamStack (8 min)
+       ================================================================== -->
+  <section class="sect">
+    <div class="sect-head">
+      <div class="num">03</div>
+      <div class="name"><em>DreamStack</em> — the product</div>
+      <div class="lead">Lead<strong>Tom Buckley</strong></div>
+      <div class="dur">8<span class="unit">min</span></div>
+    </div>
+    <div class="sect-body">
+      <div class="spacer"></div>
+      <div class="content">
+
+        <div class="block wide">
+          <div class="lbl">Structure <span class="lbl-aside">// three stages, two minutes each, leave 2 min to breathe and handle inline questions</span></div>
+          <ul>
+            <li><b>Dream Capture.</b> A guided session that turns an ambiguous business problem into a structured specification. Not a form, not a chatbot — a collaborative interview that produces an artefact the rest of the stack consumes.</li>
+            <li><b>Dream Studio.</b> The canvas where that specification becomes a working system — data flows, agents, policies, integrations — assembled from reusable components, reviewable by humans at every step.</li>
+            <li><b>Dream Factory.</b> The runtime. Deploys, monitors, versions, and rolls back. It's where the customer's AI actually lives, and where we compound — every deployment makes the next one faster.</li>
+          </ul>
+          <div class="stage">Tom takes over from Jonny. Share screen now — DreamCatcher session open on screen one, Studio canvas on screen two, Factory dashboard on screen three. Do not read the slide; narrate the product.</div>
+        </div>
+
+        <div class="block">
+          <div class="lbl">Say it like this</div>
+          <div class="say land">Most "AI platforms" give you a model and a blank page. We give you three things: a conversation that produces a spec, a canvas that turns the spec into a system, and a runtime that ships it. Capture, Studio, Factory.</div>
+          <div class="say">Here's a live one — a mid-market insurer. Thirty minutes in Capture. Four hours in Studio. Live in production the same week. Every artefact you see on screen came out of that session.</div>
+        </div>
+
+        <div class="block">
+          <div class="lbl">Proof points to drop</div>
+          <ul>
+            <li><b>Week-one deployments.</b> Current average Capture-to-Production is 6.2 days. Target for Q3 is under three.</li>
+            <li><b>Component reuse.</b> 71% of Studio components are reused across customers. That ratio is the moat.</li>
+            <li><b>Factory telemetry.</b> Every production system phones home — we see what works, we ship it back into the catalogue. Compounding.</li>
+          </ul>
+          <div class="stage">If a partner leans in during the demo, stop and dig in. The demo is the pitch. Don't rush to the financials.</div>
+
+          <div class="obj">
+            <div class="q">How is this different from [Palantir / C3 / Databricks AI]?</div>
+            <div class="a">Palantir is a services company with a product wrapper — two-year deployments, $10m+ contracts. C3 is an application catalogue. Databricks is the data plane underneath us, not a competitor. We're the <em>product</em> company for the path from business problem to running system, at mid-market price points.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================================
+       04 — Traction & advisory network (4 min)
+       ================================================================== -->
+  <section class="sect">
+    <div class="sect-head">
+      <div class="num">04</div>
+      <div class="name">Traction &amp; the <em>advisory network</em></div>
+      <div class="lead">Lead<strong>Jonny Ward &amp; Jeremy Amias</strong></div>
+      <div class="dur">4<span class="unit">min</span></div>
+    </div>
+    <div class="sect-body">
+      <div class="spacer"></div>
+      <div class="content">
+
+        <div class="block">
+          <div class="lbl">Talk track — Jonny (90s)</div>
+          <ul>
+            <li>Current ARR, growth trajectory, logo count. <b>Name the customers we can name.</b> For the ones we can't, describe the industry + scale.</li>
+            <li>Win rate in qualified pipeline. Time-to-close. Land-and-expand multiples on the accounts that have been with us &gt; 6 months.</li>
+            <li>Source of pipeline — this is the lead-in to Jeremy's advisor story. <em>Where does it actually come from?</em></li>
+          </ul>
+          <div class="stage">Jonny: after the pipeline-source sentence, literally turn to Jeremy. "This is where Jeremy comes in."</div>
+        </div>
+
+        <div class="block">
+          <div class="lbl">Talk track — Jeremy (2.5 min)</div>
+          <ul>
+            <li>The advisory network: <b>senior operators at enterprise buyers</b>, compensated in equity, who introduce us into their own organisations and peer networks.</li>
+            <li>Current roster — 14 advisors, covering FS, insurance, healthcare, defence, public sector. Six are CIOs at Fortune-500s.</li>
+            <li>Why it compounds: each advisor sources 3–5 qualified intros per quarter; each landed logo recruits the next advisor. The network is the go-to-market.</li>
+            <li>Why this is the moat partners under-price: it can't be copied by a company that raised last week. It took us two years and a founding team with these relationships to build.</li>
+          </ul>
+          <div class="stage">Jeremy: speak slowly. This section is your credibility, not a sales pitch. Partners will probe it — let them.</div>
+        </div>
+
+        <div class="block wide">
+          <div class="lbl">Say it like this</div>
+          <div class="say land">Every dollar of ARR we've booked came from someone in our advisor network making the introduction. It's not a marketing channel. It's the business model.</div>
+
+          <div class="obj">
+            <div class="q">What happens to the advisor model at scale? Doesn't it cap out?</div>
+            <div class="a">It scales in two dimensions. First, each advisor's network is itself recursive — they bring their successors. Second, once we're inside a category, the customer reference becomes the next advisor. We're seeing the flywheel now, not in theory.</div>
+          </div>
+          <div class="obj">
+            <div class="q">How are advisors compensated, and is the equity dilution material?</div>
+            <div class="a">Modest equity grants on a four-year vest, cliff at one year, tied to performance. Total advisor pool is under 3% fully-diluted. Dan can walk through the cap table on request.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================================
+       05 — Business model, financials & the ask (5 min)
+       ================================================================== -->
+  <section class="sect">
+    <div class="sect-head">
+      <div class="num">05</div>
+      <div class="name">Business model, <em>financials</em> &amp; the ask</div>
+      <div class="lead">Lead<strong>Dan Moon &amp; Jonny Ward</strong></div>
+      <div class="dur">5<span class="unit">min</span></div>
+    </div>
+    <div class="sect-body">
+      <div class="spacer"></div>
+      <div class="content">
+
+        <div class="block">
+          <div class="lbl">Talk track — Dan (3 min)</div>
+          <ul>
+            <li><b>Three-tier pricing.</b> Capture sessions sold standalone at low ACV (the land). Studio + Factory at mid-six-figures committed ARR (the expand). Enterprise platform deals at seven figures (the scale).</li>
+            <li><b>Unit economics.</b> Gross margin 74% today, tracking to 82% at scale as Factory amortises. CAC payback 11 months. Net revenue retention 138%.</li>
+            <li><b>Path to profitability.</b> Default-alive at the end of the A. Profitable at current burn within 18 months on current pipeline conversion.</li>
+            <li><b>Year-4 trajectory.</b> $120m ARR base case, $200m bull case. Burn multiple &lt; 1.0 from month 12 post-A.</li>
+          </ul>
+          <div class="stage">Dan: tight, numeric, no hedging. Three minutes — do not drift. Partners want to see the model runs. If they ask to see the spreadsheet, say yes — do not send it live, send it after. Hand cleanly to Jonny on the Y4 line.</div>
+        </div>
+
+        <div class="block">
+          <div class="lbl">Talk track — Jonny (2 min)</div>
+          <ul>
+            <li><b>Round size, valuation, structure.</b> Direct, no dance.</li>
+            <li><b>Use of funds.</b> GTM scale-up (50%), product (30%), team buildout (20%). Name the specific hires that unlock the next twelve months.</li>
+            <li><b>What a lead looks like.</b> Size of cheque, board seat, expectation on timeline. Be specific so we don't waste a cycle on a non-lead.</li>
+            <li><b>Why them.</b> One line — genuine, not flattery. Something about their portfolio, a partner's thesis, a past bet that rhymes with ours.</li>
+          </ul>
+          <div class="stage">Jonny: look at the lead partner when you say "what a lead looks like." Make eye contact. This is the moment of the call.</div>
+        </div>
+
+        <div class="block wide">
+          <div class="lbl">Say it like this</div>
+          <div class="say">Three tiers. Capture is how we get in — low-friction, five-figure entry. Studio is where the customer commits. Factory is where they stay. NRR at 138 today.</div>
+          <div class="say">We're not asking you to underwrite a story where the economics show up later. The economics are here now. What the round buys is speed.</div>
+          <div class="stage">Dan closes on the Y4 line. Jonny picks up with the ask — same breath, no pause, the numbers and the ask are one story.</div>
+          <div class="say land">We're raising a $40m Series A at a $220m post. We're looking for a lead writing $15–25m and taking a board seat. We want this wrapped in six weeks so we can get back to shipping.</div>
+          <div class="say">Use of funds: half to GTM — specifically, four enterprise AEs and two advisor-network operators. Thirty percent to product — the Factory autonomous-deployment roadmap that doubles deployment throughput. Twenty percent to the team — a VP Eng and a head of security.</div>
+
+          <div class="obj">
+            <div class="q">138 NRR from how many cohorts?</div>
+            <div class="a">Three full cohorts now past their 12-month mark. Sample is 40 logos. We don't have enough data to call the number stable below 100 logos — flagging that honestly.</div>
+          </div>
+          <div class="obj">
+            <div class="q">What's the model's assumption for pricing compression from hyperscalers?</div>
+            <div class="a">Modelled at 18% annual compression at the Capture tier, zero at the Factory tier (switching cost). Even with 30% compression across the board the model clears $80m by Y4.</div>
+          </div>
+          <div class="obj">
+            <div class="q">What's the rest of the round look like — do you have soft commits?</div>
+            <div class="a">Existing investors are pro-rata. We have two strategic soft commits at $5m each. $25m is uncommitted and reserved for the lead and co-lead.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================================
+       06 — Q&A (6 min, flex buffer)
+       ================================================================== -->
+  <section class="sect">
+    <div class="sect-head">
+      <div class="num">06</div>
+      <div class="name">Your <em>questions</em> &amp; discussion</div>
+      <div class="lead">Lead<strong>All three — Jonny fields</strong></div>
+      <div class="dur">6<span class="unit">min</span></div>
+    </div>
+    <div class="sect-body">
+      <div class="spacer"></div>
+      <div class="content">
+
+        <div class="block wide">
+          <div class="lbl">How to run Q&amp;A <span class="lbl-aside">// this section is our flex buffer — time saved rolls in, time borrowed is reclaimed here</span></div>
+          <ul>
+            <li><b>Jonny fields first.</b> Decides who answers. Don't answer something that isn't yours — hand off. A confident hand-off is more impressive than a generalist answer.</li>
+            <li><b>Shortest honest answer wins.</b> If you don't know, say so and say when you'll follow up. Do not speculate in a Series A meeting.</li>
+            <li><b>Don't sell in Q&amp;A.</b> The pitch is over. Answer, land, move to the next question.</li>
+            <li><b>Watch the clock.</b> Q&amp;A is floored at six minutes but flexes up if we finished early. If we're at the four-minute mark and they're still asking, that's a buying signal — do not cut them off.</li>
+          </ul>
+          <div class="stage">If the conversation is generative, stay in it. Tom — watch the clock so Jonny doesn't have to. If the flex-buffer ledger went red, we ran over earlier; protect the last two minutes for Jonny's next-steps close.</div>
+        </div>
+
+        <div class="block wide">
+          <div class="lbl">Anticipated questions we haven't covered</div>
+
+          <div class="obj">
+            <div class="q">What's your moat against a well-funded fast-follower?</div>
+            <div class="a">Three layers. The advisor network (relational, non-replicable). The component catalogue and telemetry loop (compounding, data-gated). The founding team's prior relationships in regulated industries (time-gated). A competitor can copy the product in 18 months; none of the three layers in under three years.</div>
+          </div>
+          <div class="obj">
+            <div class="q">How do you think about building vs buying distribution?</div>
+            <div class="a">We don't buy distribution. The advisor model is our distribution. Partnerships with the big SIs are on the roadmap as <em>delivery</em> partners once we're at Factory scale — not as a customer-acquisition channel.</div>
+          </div>
+          <div class="obj">
+            <div class="q">What keeps you up at night?</div>
+            <div class="a">Two things, honestly. Hiring speed — the top of the AE funnel in this market is brutal. And Factory reliability as deployments scale into the hundreds. Both are solvable, both are in the use-of-funds, both are why we're raising.</div>
+          </div>
+          <div class="obj">
+            <div class="q">Why haven't you raised more already?</div>
+            <div class="a">Deliberate. We wanted to prove the model — the advisor network, the unit economics, the week-one deployments — before scaling the round. We're raising now because the market window is closing, not because we ran out of runway.</div>
+          </div>
+          <div class="obj">
+            <div class="q">What does the team look like in 18 months?</div>
+            <div class="a">From 42 today to 90–100. Roughly a third engineering, a third GTM, the rest spread across customer operations, security, and the advisor network team. No consulting arm — ever.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================================
+       07 — Next steps (2 min)
+       ================================================================== -->
+  <section class="sect">
+    <div class="sect-head">
+      <div class="num">07</div>
+      <div class="name">Next <em>steps</em></div>
+      <div class="lead">Lead<strong>Jonny Ward</strong></div>
+      <div class="dur">2<span class="unit">min</span></div>
+    </div>
+    <div class="sect-body">
+      <div class="spacer"></div>
+      <div class="content">
+
+        <div class="block">
+          <div class="lbl">Talk track</div>
+          <ul>
+            <li><b>Materials follow today.</b> Deck, model, data room access, three customer references. Name the partner owning follow-up from their side.</li>
+            <li><b>Process shape.</b> Partner meeting in two weeks. Reference calls in parallel. Term sheet by week four. Close by week six.</li>
+            <li><b>Propose a deep-dive.</b> Offer a 60-minute follow-up focused on the area they pushed hardest on. Make it easy to say yes.</li>
+            <li><b>Close on urgency, not pressure.</b> The round closes in six weeks. You'd love for them to be in it. Leave it there.</li>
+          </ul>
+          <div class="stage">Jonny: end the call on time. Going over signals weakness. If Q&amp;A overran, compress the "process shape" bullet — never skip the deep-dive offer or the close line.</div>
+        </div>
+
+        <div class="block">
+          <div class="lbl">Say it like this</div>
+          <div class="say land">We're running a tight process — partner meetings over the next two weeks, term sheet by week four, close by week six. Materials will hit your inbox within the hour. Happy to line up a deep-dive on whichever part of this you'd want to pressure-test.</div>
+          <div class="say">Thanks for the time. Real pleasure. We'll be in touch today.</div>
+          <div class="stage">Exit cleanly. Don't linger. Debrief on the team channel within 30 minutes while it's fresh.</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================================
+       Appendix: key numbers + rules of engagement
+       ================================================================== -->
+  <section class="appendix">
+    <h2>Key <em>numbers</em> to have on the tip of your tongue</h2>
+
+    <div class="stats">
+      <div class="s"><div class="n">$40m</div><div class="l">Round size</div></div>
+      <div class="s"><div class="n">$220m</div><div class="l">Post-money</div></div>
+      <div class="s"><div class="n">138%</div><div class="l">Net revenue retention</div></div>
+      <div class="s"><div class="n">6.2 days</div><div class="l">Capture → Production</div></div>
+      <div class="s"><div class="n">14</div><div class="l">Advisors on the roster</div></div>
+      <div class="s"><div class="n">71%</div><div class="l">Component reuse rate</div></div>
+      <div class="s"><div class="n">74% → 82%</div><div class="l">Gross margin, today → scale</div></div>
+      <div class="s"><div class="n">11 mo</div><div class="l">CAC payback</div></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="block">
+        <div class="lbl">Rules of engagement</div>
+        <ul>
+          <li><b>Time is sacred.</b> Twenty-four minutes of material, six for them. Q&amp;A (06) is the flex buffer — it shrinks if we run long, grows if we finish tight.</li>
+          <li><b>Hand off cleanly.</b> Name the person, pause, let them pick up. No talking over each other.</li>
+          <li><b>Don't qualify.</b> No "sort of," no "kind of," no "we think." We either know or we don't.</li>
+          <li><b>Silence is fine.</b> After a big line, let it sit. Do not fill the pause.</li>
+          <li><b>Listen for the real question.</b> Most partner questions are actually about risk. Name the risk they're pointing at.</li>
+        </ul>
+      </div>
+      <div class="block">
+        <div class="lbl">Things we do not say</div>
+        <ul>
+          <li><b>"We're like [X] for [Y]."</b> Ever.</li>
+          <li><b>"It's early."</b> It is. They know. Don't remind them.</li>
+          <li><b>"AI-powered."</b> Everything is. Say what it actually does.</li>
+          <li><b>"Skip section 08."</b> There is no section 08 any more. The script is 07.</li>
+          <li><b>"We're exploring…"</b> Either we're doing it or we're not.</li>
+          <li><b>Competitor names</b> unless they ask. Then be specific and generous.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot-note">Conquer AI · Pitch Script v1 · Internal · Not for circulation outside the presenting team</div>
+
+</main>
+
+<div class="print-hint"><span onclick="window.print()">Print / Save PDF</span></div>
+<script>
+  (async function () {
+    try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
+    await new Promise(r => {
+      if (document.readyState === 'complete') r();
+      else window.addEventListener('load', r, { once: true });
+    });
+    setTimeout(() => window.print(), 500);
+  })();
+</script>
+</body>
+</html>

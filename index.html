@@ -1,0 +1,260 @@
+<!DOCTYPE html><html lang="en"><head>
+
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DreamStack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+  /* ------------------------------------------------------------
+     Index landing — dark stage with the same animated dot field
+     as StageTransition. A centered hero ("From conversation to
+     production software.") and a single light capsule CTA that
+     glows on hover. The Powered-by-ConquerAI mark sits anchored
+     at the very bottom.
+     ------------------------------------------------------------ */
+  :root {
+    --bg: #1A1A1A;
+    --ink: #E8E8EA;
+    --ink-2: #A8A9AB;
+    --ink-3: #7C7E82;
+    --paper: #F2F2F2;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow: hidden;
+  }
+
+  /* Animated halftone field — copied verbatim from StageTransition
+     so the two pages share an identical background bed. */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,.32) 1px, transparent 1.6px);
+    background-size: 14px 14px;
+    -webkit-mask-image:
+      linear-gradient(to bottom, transparent 50%, #000 88%, #000 100%),
+      radial-gradient(ellipse 70% 60% at 50% 100%, #000 30%, transparent 95%);
+    -webkit-mask-composite: source-in;
+            mask-image:
+      linear-gradient(to bottom, transparent 50%, #000 88%, #000 100%),
+      radial-gradient(ellipse 70% 60% at 50% 100%, #000 30%, transparent 95%);
+            mask-composite: intersect;
+    animation: dc-dots-fade 6s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    width: 50%; height: 70%;
+    left: 25%; bottom: -10%;
+    background: radial-gradient(circle, rgba(255,255,255,.16) 0%, rgba(255,255,255,.07) 35%, transparent 65%);
+    filter: blur(28px);
+    animation: dc-glow-wave 10s ease-in-out infinite;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 0;
+  }
+  @keyframes dc-dots-fade {
+    0%,100% { opacity:.55; }
+    50%      { opacity:.85; }
+  }
+  @keyframes dc-glow-wave {
+    0%   { transform: translate(-50%, 0); opacity:.6; }
+    25%  { transform: translate(-15%, -8%); opacity:.95; }
+    50%  { transform: translate(20%, 4%); opacity:.8; }
+    75%  { transform: translate(45%, -6%); opacity:.95; }
+    100% { transform: translate(-50%, 0); opacity:.6; }
+  }
+
+  /* ============================================================
+     Layout — header / hero / footer in a 1-column grid that
+     fills the viewport.
+     ============================================================ */
+  .stage {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 28px 32px 28px;
+  }
+
+  /* ---- Top brand lockup (Powered by ConquerAI) ---- */
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    justify-self: center;
+    opacity: 0;
+    animation: fadeUp .55s .05s forwards cubic-bezier(.2,.8,.2,1);
+  }
+  .brand img {
+    display: block;
+    height: 34px;
+    width: auto;
+    opacity: .7;
+    filter: brightness(1.1);
+  }
+  .footer-spacer { height: 26px; }
+
+  /* ---- Hero ---- */
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 56px;
+    text-align: center;
+    padding: 0 24px;
+  }
+  .headline {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 400;
+    font-size: clamp(40px, 6.6vw, 84px);
+    line-height: 1.08;
+    letter-spacing: -.025em;
+    color: #fff;
+    margin: 0;
+    max-width: 14ch;
+    text-wrap: balance;
+    opacity: 0;
+    animation: fadeUp .7s .15s forwards cubic-bezier(.2,.8,.2,1);
+  }
+
+  /* ---- CTA pill ---- */
+  .cta {
+    --pill-bg: #F2F0EA;
+    --pill-bg-hover: #FFFFFF;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 26px 14px 28px;
+    background: var(--pill-bg);
+    color: #0E0E10;
+    border: 0;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -.005em;
+    cursor: pointer;
+    text-decoration: none;
+    position: relative;
+    isolation: isolate;
+    transition:
+      transform .25s cubic-bezier(.2,.8,.2,1),
+      background-color .25s ease,
+      box-shadow .35s ease;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.65) inset,
+      0 -1px 0 rgba(0,0,0,.06) inset,
+      0 6px 18px rgba(0,0,0,.45);
+    opacity: 0;
+    animation: fadeUp .7s .28s forwards cubic-bezier(.2,.8,.2,1);
+  }
+  /* Hover glow matches DreamCatcher's "Start your dream session" CTA —
+     pure white halo, no blue tint. */
+  .cta:hover {
+    background: var(--pill-bg-hover);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.6),
+      0 0 22px 6px rgba(255,255,255,.22),
+      0 0 60px 14px rgba(255,255,255,.18);
+  }
+  .cta:active { transform: translateY(1px); }
+  .cta:focus-visible { outline: 2px solid rgba(255,255,255,.6); outline-offset: 6px; }
+  .cta-icon {
+    width: 22px; height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #0E0E10;
+  }
+  .cta-icon svg { display: block; width: 100%; height: 100%; }
+  .cta-name { font-weight: 600; letter-spacing: -.01em; }
+  .cta-prefix { font-weight: 400; color: #2a2a2c; }
+
+  /* ---- Bottom Powered by ConquerAI mark ---- */
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 12px;
+    opacity: 0;
+    animation: fadeUp .7s .42s forwards cubic-bezier(.2,.8,.2,1);
+  }
+  .footer img {
+    display: block;
+    height: 26px;
+    width: auto;
+    opacity: .6;
+    filter: brightness(1.1);
+    transition: opacity .25s ease;
+  }
+  .footer img:hover { opacity: .85; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 720px) {
+    .stage { padding: 20px 16px; }
+    .hero { gap: 40px; }
+    .footer img { height: 22px; }
+  }
+</style>
+</head>
+<body data-new-gr-c-s-check-loaded="8.937.0" data-gr-ext-installed="" style="" data-new-gr-c-s-loaded="8.937.0">
+
+<div class="stage">
+
+  <!-- Top: Powered by ConquerAI lockup (moved up from footer) -->
+  <div class="brand">
+    <img src="assets/powered-by-conquerai-cropped.png" alt="Powered by ConquerAI" style="opacity: 1"/>
+  </div>
+  <template data-disabled-old-brand>
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 50.626 43.368" xmlns="http://www.w3.org/2000/svg" fill="#fff">
+        <path d="M 25.477 0 C 31.054 0 36.14 2.106 39.982 5.566 C 40.323 5.582 40.651 5.603 40.966 5.628 C 42.042 5.714 43.035 5.856 43.851 6.088 C 44.26 6.204 44.681 6.358 45.065 6.572 C 45.44 6.781 45.89 7.109 46.212 7.621 C 46.567 8.188 46.675 8.84 46.539 9.468 C 46.415 10.035 46.115 10.487 45.825 10.822 C 45.542 11.148 45.182 11.462 44.764 11.765 C 45.497 13.188 46.078 14.703 46.484 16.287 C 47.128 16.23 47.632 16.191 48.002 16.173 C 48.263 16.16 48.569 16.151 48.82 16.175 C 48.889 16.181 49.012 16.196 49.154 16.231 C 49.209 16.245 49.646 16.341 50.037 16.713 C 50.283 16.946 50.567 17.346 50.618 17.9 C 50.667 18.431 50.477 18.832 50.33 19.053 C 50.081 19.428 49.752 19.604 49.699 19.634 C 49.501 19.745 49.305 19.809 49.227 19.833 C 49.115 19.869 48.996 19.901 48.879 19.93 C 48.643 19.99 48.346 20.055 48.008 20.125 C 47.746 20.178 47.447 20.236 47.117 20.299 C 47.14 20.665 47.154 21.033 47.159 21.404 L 47.161 21.684 C 47.161 22.931 47.055 24.152 46.853 25.341 C 47.446 25.528 47.969 25.749 48.398 26.018 C 48.772 26.254 49.191 26.598 49.475 27.105 C 49.789 27.666 49.875 28.321 49.7 28.967 C 49.542 29.551 49.207 29.995 48.909 30.304 C 48.604 30.622 48.247 30.892 47.889 31.122 C 47.176 31.581 46.268 32.007 45.263 32.403 C 44.889 32.551 44.491 32.699 44.071 32.846 C 40.323 39.076 33.533 43.268 25.757 43.367 L 25.477 43.368 C 20.115 43.368 15.208 41.422 11.423 38.198 C 10.92 38.187 10.442 38.168 9.993 38.137 C 8.915 38.063 7.914 37.923 7.09 37.675 C 6.359 37.456 5.338 37.03 4.798 36.069 C 4.116 34.855 4.591 33.632 5.166 32.846 C 5.45 32.458 5.817 32.081 6.246 31.713 C 5.426 30.143 4.792 28.46 4.374 26.693 C 3.966 26.741 3.603 26.782 3.291 26.815 C 2.953 26.85 2.661 26.876 2.43 26.892 C 2.316 26.9 2.201 26.906 2.094 26.908 C 2.025 26.909 1.832 26.913 1.625 26.88 C 1.563 26.87 1.458 26.851 1.334 26.811 C 1.235 26.78 0.977 26.692 0.71 26.478 C 0.405 26.234 -0.02 25.721 0.001 24.97 C 0.018 24.333 0.355 23.935 0.484 23.799 C 0.741 23.528 1.029 23.405 1.06 23.39 C 1.155 23.347 1.243 23.317 1.31 23.295 C 1.453 23.249 1.617 23.205 1.793 23.165 C 2.151 23.082 2.612 22.991 3.165 22.892 C 3.469 22.838 3.811 22.781 4.187 22.722 C 3.973 21.524 3.86 20.292 3.859 19.034 C 3.859 18.585 3.873 18.139 3.901 17.697 C 3.391 17.582 2.946 17.456 2.578 17.31 C 2.219 17.167 1.832 16.978 1.508 16.726 C 1.211 16.495 0.694 16.029 0.583 15.281 C 0.508 14.776 0.625 14.336 0.788 14.005 C 0.946 13.683 1.155 13.443 1.336 13.268 C 1.694 12.923 2.144 12.658 2.596 12.443 C 3.27 12.123 4.103 11.844 5.029 11.594 C 8.74 5.063 15.778 0.624 23.876 0.466 L 25.477 0 Z M 25.477 5.137 C 17.804 5.137 11.582 11.359 11.582 19.034 C 11.582 26.708 17.804 32.929 25.477 32.929 C 33.151 32.929 39.373 26.708 39.373 19.034 C 39.373 11.359 33.151 5.137 25.477 5.137 Z"></path>
+      </svg>
+    </span>
+    <span class="brand-text">
+      <span class="brand-name">DreamStack</span>
+      <span class="brand-tag">Powered by <b>ConquerAI</b></span>
+    </span>
+  </template>
+
+  <!-- Hero -->
+  <main class="hero" style="padding: 0px">
+    <h1 class="headline" style="font-size: 56px; width: 1100px">From conversation to production software</h1>
+
+    <a class="cta" href="DreamCatcher.html" id="cta">
+      <span class="cta-prefix">Start with</span>
+      <span class="cta-icon" aria-hidden="true">
+        <!-- DreamCatcher mark, fill swapped to dark for the light pill -->
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16.0005 2.47998C16.442 2.48023 16.8002 2.8382 16.8003 3.27979V6.79541C21.6834 7.20194 25.5199 11.2917 25.52 16.2798C25.52 18.7611 24.5694 21.0198 23.0142 22.7144C23.4623 22.8732 23.9261 23.0309 24.4077 23.187C24.7956 23.3128 25.0657 23.7961 25.0112 24.2661C24.9565 24.7363 24.5975 25.0159 24.2095 24.8901C23.2896 24.5919 22.4258 24.2875 21.6079 23.9712C20.237 24.9724 18.5894 25.6142 16.8003 25.7632V28.7202C16.8002 29.1618 16.442 29.5198 16.0005 29.52C15.5587 29.52 15.1998 29.1619 15.1997 28.7202V25.7632C13.4254 25.6154 11.7904 24.9827 10.4263 23.9956C9.62772 24.3029 8.78563 24.5999 7.89014 24.8901C7.50214 25.0158 7.14307 24.7362 7.08838 24.2661C7.03389 23.7961 7.304 23.3128 7.69189 23.187C8.14666 23.0396 8.58543 22.8905 9.01025 22.7407C7.44055 21.0433 6.47998 18.7741 6.47998 16.2798C6.48009 11.2917 10.3166 7.20193 15.1997 6.79541V3.27979C15.1998 2.83805 15.5587 2.47998 16.0005 2.47998ZM15.1997 21.6802C14.2707 22.2543 13.2893 22.7683 12.23 23.2456C13.1292 23.7333 14.1331 24.0516 15.1997 24.1587V21.6802ZM16.8003 24.1587C17.8844 24.0499 18.9035 23.7225 19.814 23.2212C18.7378 22.7337 17.7428 22.2059 16.8003 21.6167V24.1587ZM8.604 13.4458C8.26653 14.3259 8.07962 15.2809 8.07959 16.2798C8.07959 18.5931 9.07223 20.6745 10.6538 22.1226C12.1624 21.5174 13.4821 20.8691 14.6909 20.1226C12.577 18.4331 10.6819 16.3026 8.604 13.4458ZM23.4302 13.5347C21.3775 16.347 19.5008 18.4516 17.4087 20.1235C18.5983 20.8583 19.8958 21.4973 21.3745 22.0942C22.9389 20.6474 23.9204 18.5787 23.9204 16.2798C23.9204 15.3146 23.7463 14.39 23.4302 13.5347ZM16.8003 18.6333C18.7981 17.0264 20.62 14.9606 22.7036 12.064C21.4356 10.0519 19.2885 8.64958 16.8003 8.3999V18.6333ZM15.1997 8.3999C12.7417 8.64655 10.616 10.0178 9.34229 11.9907C11.4131 14.8775 13.224 16.9433 15.1997 18.5522V8.3999Z" fill="#0E0E10"></path>
+        </svg>
+      </span>
+      <span class="cta-name">DreamCatcher</span>
+    </a>
+  </main>
+
+  <!-- Bottom intentionally empty — logo moved to top -->
+  <div class="footer-spacer" aria-hidden="true"></div>
+
+</div>
+
+
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>

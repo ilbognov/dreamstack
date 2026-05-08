@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DreamStack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ------------------------------------------------------------
+     Index landing — handoff card layout
+     ------------------------------------------------------------
+     "Your dream session is done" headline + DreamCatcher pill,
+     stacked above a dashed amber project card with folder tabs
+     (Process Ontology / TechCorp), and a "Converting …" caption
+     beneath. Powered by ConquerAI sits at the top.
+     Clicking the card advances to StageTransition.html.
+     ------------------------------------------------------------ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: #1A1A1A;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #fff;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ---- Animated halftone dot field ---- */
+  .dc-bgdots {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    overflow: hidden;
+  }
+  .dc-bgdots::after {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,.32) 1px, transparent 1.6px);
+    background-size: 14px 14px;
+    mask-image:
+      linear-gradient(to bottom, transparent 50%, #000 88%, #000 100%),
+      radial-gradient(ellipse 70% 60% at 50% 100%, #000 30%, transparent 95%);
+    mask-composite: intersect;
+    -webkit-mask-image:
+      linear-gradient(to bottom, transparent 50%, #000 88%, #000 100%),
+      radial-gradient(ellipse 70% 60% at 50% 100%, #000 30%, transparent 95%);
+    -webkit-mask-composite: source-in;
+    animation: dc-dots-fade 6s ease-in-out infinite;
+    opacity: .55;
+  }
+  @keyframes dc-dots-fade {
+    0%, 100% { opacity: .55; }
+    50%       { opacity: .85; }
+  }
+  .dc-bgdots::before {
+    content: "";
+    position: absolute;
+    width: 50%; height: 70%;
+    left: 25%; bottom: -10%;
+    background: radial-gradient(circle, rgba(255,255,255,.16) 0%, rgba(255,255,255,.07) 35%, transparent 65%);
+    filter: blur(28px);
+    animation: dc-glow-wave 10s ease-in-out infinite;
+    mix-blend-mode: screen;
+    z-index: 1;
+  }
+  @keyframes dc-glow-wave {
+    0%   { transform: translate(-50%, 0);   opacity: .6; }
+    25%  { transform: translate(-15%, -8%); opacity: .95; }
+    50%  { transform: translate(20%, 4%);   opacity: .8; }
+    75%  { transform: translate(45%, -6%);  opacity: .95; }
+    100% { transform: translate(-50%, 0);   opacity: .6; }
+  }
+
+  /* ---- Page layout ---- */
+  .stage {
+    position: relative; z-index: 2;
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 28px 32px;
+  }
+
+  /* Top: Powered by ConquerAI */
+  .brand {
+    display: inline-flex; align-items: center; justify-self: center;
+    opacity: 0;
+    animation: fadeUp .55s .05s forwards cubic-bezier(.2,.8,.2,1);
+  }
+  .brand img {
+    display: block; height: 26px; width: auto;
+    opacity: .7; filter: brightness(1.1);
+  }
+
+  /* Center column */
+  .handoff-center {
+    align-self: center; justify-self: center;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 22px;
+    opacity: 0;
+    animation: fadeUp .7s .15s forwards cubic-bezier(.2,.8,.2,1);
+  }
+
+  /* ---- Outer dark card ---- */
+  .handoff-outer-card {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 24px;
+    background: linear-gradient(180deg, rgba(26,26,30,.88) 0%, rgba(18,18,22,.88) 100%);
+    border: 1px solid rgba(255,255,255,.055);
+    border-radius: 18px;
+    padding: 40px 60px 40px;
+    box-shadow: 0 32px 90px rgba(0,0,0,.5);
+    backdrop-filter: blur(10px);
+  }
+
+  /* Header */
+  .handoff-header {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 16px;
+  }
+  .handoff-done-label {
+    font-size: 17px;
+    color: rgba(220,225,232,.92);
+    letter-spacing: -0.01em;
+    font-weight: 400;
+  }
+  .handoff-brand-pill {
+    display: inline-flex; align-items: center; gap: 12px;
+    background: #0E0E10;
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 14px;
+    padding: 12px 26px;
+    color: #E6E8EB;
+    font-size: 22px; font-weight: 600;
+    letter-spacing: -0.02em;
+    box-shadow: 0 4px 16px rgba(0,0,0,.4);
+  }
+  .handoff-brand-pill svg { width: 26px; height: 26px; display: block; }
+
+  /* ---- Inner dashed amber card ---- */
+  .handoff-card {
+    width: 420px;
+    background: #131316;
+    border: 1.5px dashed rgba(193,168,71,.55);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    cursor: pointer;
+    transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease, border-color .35s ease;
+  }
+  .handoff-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(193,168,71,.9);
+    box-shadow:
+      0 0 0 4px rgba(193,168,71,.12),
+      0 22px 48px rgba(193,168,71,.18);
+  }
+  .handoff-card:focus-visible {
+    outline: 2px solid #C1A847;
+    outline-offset: 4px;
+  }
+
+  /* Folder tabs row */
+  .handoff-tabs {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    padding: 16px 0 0 18px;
+    gap: 0;
+    flex-shrink: 0;
+  }
+  .handoff-tab {
+    height: 50px;
+    border-radius: 10px 10px 0 0;
+    flex-shrink: 0;
+    position: relative;
+    box-shadow: inset 0 -8px 14px rgba(0,0,0,.18);
+  }
+  .handoff-tab:nth-child(1) { z-index: 4; width: 110px; margin-right: -8px; }
+  .handoff-tab:nth-child(2) { z-index: 3; width: 100px; margin-right: -8px; }
+  .handoff-tab:nth-child(3) { z-index: 2; width: 120px; margin-right: -8px; }
+  .handoff-tab:nth-child(4) { z-index: 1; flex: 1; border-radius: 10px 0 0 0; }
+
+  /* Card body */
+  .handoff-card-body {
+    background: #1c1d21;
+    flex: 1;
+    min-height: 180px;
+    display: flex; flex-direction: column;
+    justify-content: flex-end;
+  }
+  .handoff-card-meta {
+    padding: 18px 22px 22px;
+    display: flex; flex-direction: column;
+    gap: 6px;
+  }
+  .handoff-project-name {
+    font-size: 16px;
+    color: #E6E8EB;
+    font-weight: 500;
+    letter-spacing: -.01em;
+  }
+  .handoff-company {
+    font-size: 14px;
+    color: rgba(140,148,160,.85);
+    letter-spacing: -.005em;
+  }
+
+  /* Converting label */
+  .handoff-converting {
+    display: flex; align-items: center; gap: 9px;
+    font-family: 'Geist Mono', 'SF Mono', ui-monospace, monospace;
+    font-size: 13px;
+    color: #C1A847;
+    letter-spacing: .07em;
+    margin-top: 6px;
+  }
+  .handoff-spinner {
+    color: #C1A847;
+    animation: spin 1.2s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Bottom spacer (keeps grid balanced; brand sits at top) */
+  .footer-spacer { height: 26px; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 520px) {
+    .handoff-card { width: calc(100vw - 80px); }
+    .handoff-outer-card { padding: 28px 24px; }
+    .handoff-brand-pill { font-size: 18px; padding: 10px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="dc-bgdots" aria-hidden="true"></div>
+
+<div class="stage">
+
+  <!-- Top: Powered by ConquerAI -->
+  <div class="brand">
+    <img src="assets/powered-by-conquerai-cropped.png" alt="Powered by ConquerAI"/>
+  </div>
+
+  <!-- Center: handoff card -->
+  <div class="handoff-center">
+    <div class="handoff-outer-card">
+
+      <div class="handoff-header">
+        <span class="handoff-done-label">Your dream session is done</span>
+        <div class="handoff-brand-pill">
+          <!-- DreamCatcher mark -->
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M16.0005 2.47998C16.442 2.48023 16.8002 2.8382 16.8003 3.27979V6.79541C21.6834 7.20194 25.5199 11.2917 25.52 16.2798C25.52 18.7611 24.5694 21.0198 23.0142 22.7144C23.4623 22.8732 23.9261 23.0309 24.4077 23.187C24.7956 23.3128 25.0657 23.7961 25.0112 24.2661C24.9565 24.7363 24.5975 25.0159 24.2095 24.8901C23.2896 24.5919 22.4258 24.2875 21.6079 23.9712C20.237 24.9724 18.5894 25.6142 16.8003 25.7632V28.7202C16.8002 29.1618 16.442 29.5198 16.0005 29.52C15.5587 29.52 15.1998 29.1619 15.1997 28.7202V25.7632C13.4254 25.6154 11.7904 24.9827 10.4263 23.9956C9.62772 24.3029 8.78563 24.5999 7.89014 24.8901C7.50214 25.0158 7.14307 24.7362 7.08838 24.2661C7.03389 23.7961 7.304 23.3128 7.69189 23.187C8.14666 23.0396 8.58543 22.8905 9.01025 22.7407C7.44055 21.0433 6.47998 18.7741 6.47998 16.2798C6.48009 11.2917 10.3166 7.20193 15.1997 6.79541V3.27979C15.1998 2.83805 15.5587 2.47998 16.0005 2.47998ZM15.1997 21.6802C14.2707 22.2543 13.2893 22.7683 12.23 23.2456C13.1292 23.7333 14.1331 24.0516 15.1997 24.1587V21.6802ZM16.8003 24.1587C17.8844 24.0499 18.9035 23.7225 19.814 23.2212C18.7378 22.7337 17.7428 22.2059 16.8003 21.6167V24.1587ZM8.604 13.4458C8.26653 14.3259 8.07962 15.2809 8.07959 16.2798C8.07959 18.5931 9.07223 20.6745 10.6538 22.1226C12.1624 21.5174 13.4821 20.8691 14.6909 20.1226C12.577 18.4331 10.6819 16.3026 8.604 13.4458ZM23.4302 13.5347C21.3775 16.347 19.5008 18.4516 17.4087 20.1235C18.5983 20.8583 19.8958 21.4973 21.3745 22.0942C22.9389 20.6474 23.9204 18.5787 23.9204 16.2798C23.9204 15.3146 23.7463 14.39 23.4302 13.5347ZM16.8003 18.6333C18.7981 17.0264 20.62 14.9606 22.7036 12.064C21.4356 10.0519 19.2885 8.64958 16.8003 8.3999V18.6333ZM15.1997 8.3999C12.7417 8.64655 10.616 10.0178 9.34229 11.9907C11.4131 14.8775 13.224 16.9433 15.1997 18.5522V8.3999Z" fill="#fff"/>
+          </svg>
+          <span>DreamCatcher</span>
+        </div>
+      </div>
+
+      <a class="handoff-card" href="StageTransition.html" id="handoff-card" aria-label="Open Process Ontology — TechCorp">
+        <div class="handoff-tabs">
+          <div class="handoff-tab" style="background:#92400E;"></div>
+          <div class="handoff-tab" style="background:#7C3AED;"></div>
+          <div class="handoff-tab" style="background:#16A34A;"></div>
+          <div class="handoff-tab" style="background:#2563EB;"></div>
+        </div>
+        <div class="handoff-card-body">
+          <div class="handoff-card-meta">
+            <div class="handoff-project-name">Process Ontology</div>
+            <div class="handoff-company">TechCorp</div>
+          </div>
+        </div>
+      </a>
+
+    </div>
+
+    <div class="handoff-converting">
+      <svg class="handoff-spinner" viewBox="0 0 24 24" fill="none" width="14" height="14">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="40 20" stroke-linecap="round"/>
+      </svg>
+      Converting ...
+    </div>
+  </div>
+
+  <div class="footer-spacer" aria-hidden="true"></div>
+</div>
+
+</body>
+</html>

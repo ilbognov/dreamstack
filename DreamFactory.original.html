@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>DreamFactory</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link href="https://fonts.googleapis.com/css2?family=&family=&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0c10; --panel:#0f1116; --panel-2:#141821; --line:#1d212b; --line-2:#2a2f3a;
+    --ink:#e7e9ee; --ink-2:#9aa0ab; --ink-3:#6b7280; --ink-4:#4b5362;
+    --ok:#34d399; --warn:#fbbf24; --info:#60a5fa; --purple:#a78bfa; --err:#f87171;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Geist",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+  a{color:inherit}
+
+  .app{display:grid;grid-template-rows:52px 1fr 28px;height:100vh}
+
+  .top{background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 18px}
+  .back{display:flex;align-items:center;gap:8px;color:var(--ink-2);text-decoration:none;font-family:"Geist Mono",monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;padding:6px 10px;border-radius:4px;border:1px solid var(--line)}
+  .back:hover{color:var(--ink);border-color:var(--line-2)}
+  .brand{display:flex;align-items:center;gap:10px;font-family:"Geist Mono",monospace;font-size:13px}
+  .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 1.8s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .brand b{font-weight:500;color:#fff}
+  .brand span{color:var(--ink-3);margin-left:8px;font-size:11px;letter-spacing:.15em;text-transform:uppercase}
+  .tabs{display:flex;gap:2px;margin-left:20px}
+  .tab{padding:7px 14px;font-size:12px;color:var(--ink-2);font-family:"Geist Mono",monospace;letter-spacing:.1em;text-transform:uppercase;border-radius:4px;cursor:pointer}
+  .tab.on{background:var(--panel-2);color:#fff;border:1px solid var(--line-2)}
+  .top-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+  .build-chip{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--panel-2);border:1px solid var(--line-2);border-radius:4px;font-family:"Geist Mono",monospace;font-size:11px;color:var(--ink);letter-spacing:.05em}
+  .build-chip .n{color:var(--ok)}
+  .btn{padding:7px 14px;border-radius:4px;border:1px solid var(--line-2);font-family:"Geist Mono",monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink);background:transparent;cursor:pointer}
+  .btn.primary{background:var(--ok);color:#041a12;border-color:var(--ok);font-weight:600}
+
+  .main{display:grid;grid-template-columns:360px 1fr 340px;min-height:0}
+
+  /* Agent board */
+  .board{background:var(--bg);border-right:1px solid var(--line);overflow-y:auto;padding:18px}
+  .board h3{margin:0 0 14px;font-size:18px;font-weight:500;color:#fff;letter-spacing:-0.01em;display:flex;align-items:center;gap:10px}
+  .board h3 .tag{font-family:"Geist Mono",monospace;font-size:10px;color:var(--ink-3);letter-spacing:.15em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--line-2);border-radius:3px;margin-left:auto;font-weight:400}
+  .swim{display:grid;grid-template-columns:1fr;gap:12px}
+  .col{display:flex;flex-direction:column;gap:8px;min-height:0}
+  .col h4{margin:0 0 4px;font-family:"Geist Mono",monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-4);font-weight:400;display:flex;justify-content:space-between;align-items:center}
+  .col h4 .n{color:var(--ink-2)}
+  .agent{background:var(--panel-2);border:1px solid var(--line-2);border-radius:4px;padding:12px;display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:border-color .15s}
+  .agent:hover{border-color:var(--info)}
+  .agent.sel{border-color:var(--ok);box-shadow:0 0 0 1px var(--ok)}
+  .agent .hd{display:flex;align-items:center;gap:8px}
+  .agent .avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Geist Mono",monospace;font-size:10px;font-weight:700;color:#000;flex-shrink:0}
+  .agent .nm{font-size:13px;color:#fff;font-weight:500;line-height:1.1}
+  .agent .role{font-size:10px;color:var(--ink-3);font-family:"Geist Mono",monospace;letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+  .agent .task{font-size:12px;color:var(--ink-2);line-height:1.35}
+  .agent .bar{height:4px;background:#22262f;border-radius:2px;overflow:hidden;position:relative}
+  .agent .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--info);border-radius:2px}
+  .agent.ok .bar i{background:var(--ok)}
+  .agent.block .bar i{background:var(--warn)}
+  .agent .mt{display:flex;justify-content:space-between;font-family:"Geist Mono",monospace;font-size:9px;letter-spacing:.1em;color:var(--ink-4);text-transform:uppercase}
+  .agent.ok .mt .pct{color:var(--ok)}
+  .agent.block .mt .pct{color:var(--warn)}
+  .agent .mt .pct{color:var(--info)}
+
+  /* Middle: build log / code stream */
+  .center{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+  .center .bar{padding:12px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;font-family:"Geist Mono",monospace;font-size:11px;color:var(--ink-3);letter-spacing:.1em;text-transform:uppercase}
+  .center .bar .on{color:#fff}
+  .center .bar .rt{margin-left:auto;display:flex;gap:10px;color:var(--ok)}
+  .stream{flex:1;overflow-y:auto;padding:14px 18px;font-family:"Geist Mono",monospace;font-size:12px;line-height:1.65}
+  .line{display:grid;grid-template-columns:64px 62px 1fr;gap:10px;padding:3px 0;align-items:baseline}
+  .line .msg{color:var(--ink);min-width:0;overflow-wrap:break-word;white-space:normal}
+  .line .t{color:var(--ink-4)}
+  .line .lv{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:500}
+  .line .lv.info{color:var(--info)}
+  .line .lv.ok{color:var(--ok)}
+  .line .lv.warn{color:var(--warn)}
+  .line .lv.gen{color:var(--purple)}
+  .line .lv.deploy{color:#f472b6}
+  .line .msg{color:var(--ink)}
+  .line .msg b{color:#fff}
+  .line .msg .f{color:var(--info)}
+  .line .msg .g{color:var(--ok)}
+
+  /* Right: app preview + chat */
+  .right{background:var(--panel);display:flex;flex-direction:column;min-height:0}
+  .preview-hd{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;font-family:"Geist Mono",monospace;font-size:11px;color:var(--ink-3);letter-spacing:.1em;text-transform:uppercase}
+  .preview-hd .url{flex:1;padding:4px 10px;background:var(--panel-2);border:1px solid var(--line-2);border-radius:3px;color:var(--ink);font-size:10px;text-transform:none;letter-spacing:.02em}
+  .preview-hd .live{color:var(--ok);display:flex;align-items:center;gap:6px}
+  .preview-hd .live .d{width:5px;height:5px;background:var(--ok);border-radius:50%;box-shadow:0 0 6px var(--ok)}
+
+  .preview{flex:0 0 auto;padding:14px;background:#f6f7fa;border-bottom:1px solid var(--line);color:#0b0c10;min-height:320px}
+  .pv-head{display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:1px solid #dde0e5;margin-bottom:10px}
+  .pv-head .logo{width:22px;height:22px;background:#111;color:#fff;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+  .pv-head .tt{font-size:13px;font-weight:600;color:#111}
+  .pv-head .nv{margin-left:auto;display:flex;gap:14px;font-size:11px;color:#4b5362}
+  .pv-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .pv-form .field{display:flex;flex-direction:column;gap:4px}
+  .pv-form .field.full{grid-column:1 / -1}
+  .pv-form label{font-size:10px;color:#6b7280;font-family:"Geist Mono",monospace;letter-spacing:.08em;text-transform:uppercase}
+  .pv-form .val{padding:7px 10px;background:#fff;border:1px solid #dde0e5;border-radius:3px;font-size:12px;color:#111;font-weight:500}
+  .pv-submit{grid-column:1 / -1;background:#111;color:#fff;border:0;border-radius:3px;padding:9px;font-size:12px;font-weight:600;font-family:"Geist Mono",monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin-top:4px}
+
+  .chat{flex:1;display:flex;flex-direction:column;min-height:0}
+  .chat-hd{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .chat-hd .a{width:26px;height:26px;border-radius:50%;background:var(--ok);color:#041a12;display:flex;align-items:center;justify-content:center;font-family:"Geist Mono",monospace;font-size:10px;font-weight:700}
+  .chat-hd .info{display:flex;flex-direction:column}
+  .chat-hd .nm{font-size:13px;color:#fff;font-weight:500}
+  .chat-hd .sub{font-size:10px;color:var(--ink-3);font-family:"Geist Mono",monospace;letter-spacing:.1em;text-transform:uppercase}
+  .chat-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+  .msg{display:flex;gap:10px;font-size:12px;line-height:1.5}
+  .msg .av{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:"Geist Mono",monospace;font-size:9px;font-weight:700}
+  .msg.a .av{background:var(--ok);color:#041a12}
+  .msg.u .av{background:var(--info);color:#06101e}
+  .msg .c{flex:1;color:var(--ink)}
+  .msg .c b{color:#fff;font-weight:500}
+  .msg .c .t{font-family:"Geist Mono",monospace;font-size:9px;color:var(--ink-4);letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:4px}
+  .chat-in{border-top:1px solid var(--line);padding:10px 12px;display:flex;gap:8px}
+  .chat-in input{flex:1;background:var(--panel-2);border:1px solid var(--line-2);border-radius:3px;padding:8px 10px;color:var(--ink);font-size:12px;font-family:"Geist",sans-serif}
+  .chat-in input::placeholder{color:var(--ink-4)}
+
+  .foot{background:var(--panel);border-top:1px solid var(--line);display:flex;align-items:center;padding:0 18px;font-family:"Geist Mono",monospace;font-size:10px;letter-spacing:.15em;color:var(--ink-3);text-transform:uppercase;gap:18px}
+  .foot .ok{color:var(--ok)}
+  .foot .right{margin-left:auto;display:flex;gap:18px}
+
+  /* Scale-to-fit stage — consistent framing across the DreamStack demo. */
+  html,body{background:#000 !important}
+  #df-stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden}
+  #df-frame{position:relative;width:1440px;height:872px;transform-origin:center center;flex:0 0 auto;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,.55);background:var(--bg)}
+  #df-frame .app{width:1440px !important;height:872px !important}
+</style>
+</head>
+<body>
+
+<div id="df-stage"><div id="df-frame">
+
+<div class="app">
+
+  <div class="top">
+    <a class="back" href="DreamStack Opener.html">← Back</a>
+    <div class="brand"><span class="dot"></span><b>DreamFactory</b><span>/ claims-flow</span></div>
+    <div class="tabs">
+      <div class="tab on">Agents</div>
+      <div class="tab">Build Log</div>
+      <div class="tab">Tests</div>
+      <div class="tab">Deployments</div>
+      <div class="tab">Infra</div>
+    </div>
+    <div class="top-right">
+      <div class="build-chip">build <b style="color:#fff">#247</b> · <span class="n">deployed</span> · us-east-1</div>
+      <button class="btn">Re-compile</button>
+      <button class="btn primary">Promote to Prod</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- Agent board -->
+    <div class="board">
+      <h3>Agent Swarm <span class="tag">12 active · 3 idle</span></h3>
+      <div class="swim">
+        <div class="col">
+          <h4>Working <span class="n">7</span></h4>
+
+          <div class="agent">
+            <div class="hd"><div class="avatar" style="background:#a78bfa">A1</div><div><div class="nm">Architect-α</div><div class="role">Schema Planner</div></div></div>
+            <div class="task">Designing <b>claims</b> & <b>policies</b> table joins with FK integrity.</div>
+            <div class="bar"><i style="width:72%"></i></div>
+            <div class="mt"><span>T+04:12</span><span class="pct">72%</span></div>
+          </div>
+
+          <div class="agent sel">
+            <div class="hd"><div class="avatar" style="background:#60a5fa">B2</div><div><div class="nm">Builder-β</div><div class="role">API Service</div></div></div>
+            <div class="task">Generating <b>POST /claims</b> with Zod validation + idempotency key.</div>
+            <div class="bar"><i style="width:88%"></i></div>
+            <div class="mt"><span>T+02:47</span><span class="pct">88%</span></div>
+          </div>
+
+          <div class="agent">
+            <div class="hd"><div class="avatar" style="background:#f472b6">F3</div><div><div class="nm">Frontend-γ</div><div class="role">UI Generator</div></div></div>
+            <div class="task">Rendering <b>ClaimIntakeForm.tsx</b> from blueprint fields.</div>
+            <div class="bar"><i style="width:54%"></i></div>
+            <div class="mt"><span>T+01:30</span><span class="pct">54%</span></div>
+          </div>
+
+          <div class="agent">
+            <div class="hd"><div class="avatar" style="background:#fbbf24">T4</div><div><div class="nm">Tester-δ</div><div class="role">Integration Suite</div></div></div>
+            <div class="task">Writing contract tests for <b>payment.send</b> webhook.</div>
+            <div class="bar"><i style="width:38%"></i></div>
+            <div class="mt"><span>T+00:58</span><span class="pct">38%</span></div>
+          </div>
+
+          <div class="agent">
+            <div class="hd"><div class="avatar" style="background:#34d399">M5</div><div><div class="nm">ML-ε</div><div class="role">Model Deploy</div></div></div>
+            <div class="task">Packaging <b>fraud-screen-v2.1</b> ONNX model for inference.</div>
+            <div class="bar"><i style="width:61%"></i></div>
+            <div class="mt"><span>T+03:22</span><span class="pct">61%</span></div>
+          </div>
+        </div>
+
+        <div class="col">
+          <h4>In Review <span class="n">3</span></h4>
+
+          <div class="agent ok">
+            <div class="hd"><div class="avatar" style="background:#a78bfa">A6</div><div><div class="nm">Architect-ζ</div><div class="role">Event Bus Design</div></div></div>
+            <div class="task">Kafka topic map · retention &amp; partition strategy.</div>
+            <div class="bar"><i style="width:100%"></i></div>
+            <div class="mt"><span>T+05:10</span><span class="pct">READY</span></div>
+          </div>
+
+          <div class="agent block">
+            <div class="hd"><div class="avatar" style="background:#f87171">S7</div><div><div class="nm">Security-η</div><div class="role">Auth + Audit</div></div></div>
+            <div class="task">Waiting on OIDC config from client. <b style="color:var(--warn)">Blocked.</b></div>
+            <div class="bar"><i style="width:30%"></i></div>
+            <div class="mt"><span>held 00:14:22</span><span class="pct">BLOCKED</span></div>
+          </div>
+
+          <div class="agent ok">
+            <div class="hd"><div class="avatar" style="background:#60a5fa">B8</div><div><div class="nm">Builder-θ</div><div class="role">Worker · Settlement</div></div></div>
+            <div class="task">Queue consumer + retry policy · ready for review.</div>
+            <div class="bar"><i style="width:100%"></i></div>
+            <div class="mt"><span>T+06:04</span><span class="pct">READY</span></div>
+          </div>
+        </div>
+
+        <div class="col">
+          <h4>Shipped <span class="n">14</span></h4>
+
+          <div class="agent ok">
+            <div class="hd"><div class="avatar" style="background:#34d399">✓</div><div><div class="nm">Deployer-ι</div><div class="role">claims-api · v247</div></div></div>
+            <div class="task">Rolled to <b>us-east-1</b> · 0 errors · health green.</div>
+            <div class="bar"><i style="width:100%"></i></div>
+            <div class="mt"><span>live 00:47</span><span class="pct">DEPLOYED</span></div>
+          </div>
+          <div class="agent ok">
+            <div class="hd"><div class="avatar" style="background:#34d399">✓</div><div><div class="nm">Builder-κ</div><div class="role">claims schema</div></div></div>
+            <div class="task">Migrations applied · indexes created.</div>
+            <div class="bar"><i style="width:100%"></i></div>
+            <div class="mt"><span>+08:12</span><span class="pct">DONE</span></div>
+          </div>
+          <div class="agent ok">
+            <div class="hd"><div class="avatar" style="background:#34d399">✓</div><div><div class="nm">Frontend-λ</div><div class="role">Adjuster Portal</div></div></div>
+            <div class="task">Pages: Queue · Detail · Decision · Audit.</div>
+            <div class="bar"><i style="width:100%"></i></div>
+            <div class="mt"><span>+12:04</span><span class="pct">DONE</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Build stream -->
+    <div class="center">
+      <div class="bar">
+        <span class="on">Build Log</span> · <span>claims-flow</span> · <span>#247</span>
+        <div class="rt"><span>● STREAMING</span></div>
+      </div>
+      <div class="stream" id="stream">
+        <div class="line"><span class="t">00:00:02</span><span class="lv info">PLAN</span><span class="msg">Received <b>blueprint.v7</b> from DreamStudio · 12 tables · 7 services · 4 workflows</span></div>
+        <div class="line"><span class="t">00:00:05</span><span class="lv info">SPAWN</span><span class="msg">Dispatched <b>12 agents</b> across 3 swim-lanes</span></div>
+        <div class="line"><span class="t">00:01:21</span><span class="lv gen">GEN</span><span class="msg"><span class="f">prisma/schema.prisma</span> · <span class="g">+214 lines</span> · Architect-α</span></div>
+        <div class="line"><span class="t">00:01:40</span><span class="lv gen">GEN</span><span class="msg"><span class="f">services/claims/create.ts</span> · <span class="g">+96 lines</span> · Builder-β</span></div>
+        <div class="line"><span class="t">00:02:12</span><span class="lv gen">GEN</span><span class="msg"><span class="f">services/claims/validate.ts</span> · <span class="g">+54 lines</span> · Builder-β</span></div>
+        <div class="line"><span class="t">00:02:45</span><span class="lv ok">TEST</span><span class="msg">Contract suite <b>claims.create</b> · <span class="g">28 / 28 passed</span></span></div>
+        <div class="line"><span class="t">00:03:01</span><span class="lv gen">GEN</span><span class="msg"><span class="f">ui/ClaimIntakeForm.tsx</span> · <span class="g">+182 lines</span> · Frontend-γ</span></div>
+        <div class="line"><span class="t">00:03:22</span><span class="lv warn">WARN</span><span class="msg">Security-η blocked · OIDC issuer URL required · notified client</span></div>
+        <div class="line"><span class="t">00:04:07</span><span class="lv gen">GEN</span><span class="msg"><span class="f">workers/settlement.ts</span> · <span class="g">+124 lines</span> · Builder-θ</span></div>
+        <div class="line"><span class="t">00:04:38</span><span class="lv ok">TEST</span><span class="msg">Integration suite <b>payment.send</b> · <span class="g">14 / 14 passed</span></span></div>
+        <div class="line"><span class="t">00:05:15</span><span class="lv gen">GEN</span><span class="msg"><span class="f">events/bus.config.ts</span> · Architect-ζ · <span class="g">ready for review</span></span></div>
+        <div class="line"><span class="t">00:06:02</span><span class="lv ok">BUILD</span><span class="msg">Compiled <b>34 modules</b> · bundle 2.4MB · <span class="g">zero type errors</span></span></div>
+        <div class="line"><span class="t">00:06:18</span><span class="lv deploy">DEPLOY</span><span class="msg">Pushed to <b>us-east-1</b> · rolling update 3/3 healthy</span></div>
+        <div class="line"><span class="t">00:06:44</span><span class="lv ok">LIVE</span><span class="msg"><b>claims-api.clouddirect.internal</b> · health green · p99 142ms</span></div>
+        <div class="line"><span class="t">00:07:03</span><span class="lv info">LOOP</span><span class="msg">Watching blueprint for changes · <b>live re-compile</b> enabled</span></div>
+      </div>
+    </div>
+
+    <!-- Right column: preview + chat -->
+    <div class="right">
+      <div class="preview-hd">
+        <span>Live App</span>
+        <span class="url">claims-api.clouddirect.internal/new</span>
+        <span class="live"><span class="d"></span>LIVE</span>
+      </div>
+      <div class="preview">
+        <div class="pv-head">
+          <div class="logo">CD</div>
+          <div class="tt">Cloud Direct · Claims</div>
+          <div class="nv"><span>Queue</span><span>New</span><span>Reports</span></div>
+        </div>
+        <div class="pv-form">
+          <div class="field"><label>Claim #</label><div class="val">CLM-4471</div></div>
+          <div class="field"><label>Policy</label><div class="val">POL-88123</div></div>
+          <div class="field"><label>Date of loss</label><div class="val">14 Apr 2026</div></div>
+          <div class="field"><label>Amount</label><div class="val">$18,400.00</div></div>
+          <div class="field full"><label>Description</label><div class="val">Rear-end collision on I-95. No injuries. Third-party at fault.</div></div>
+          <button class="pv-submit">Submit for review</button>
+        </div>
+      </div>
+
+      <div class="chat">
+        <div class="chat-hd">
+          <div class="a">AI</div>
+          <div class="info">
+            <span class="nm">AI Software Architect</span>
+            <span class="sub">Always-on · Stand-up ready</span>
+          </div>
+        </div>
+        <div class="chat-body">
+          <div class="msg a"><div class="av">AI</div><div class="c"><span class="t">09:47 · Architect</span>Morning. Build <b>#247</b> shipped at 06:44. All 3 services green. One blocker: Security-η is waiting on OIDC config from your team.</div></div>
+          <div class="msg u"><div class="av">JW</div><div class="c"><span class="t">09:48 · Jonny</span>What's the risk if we ship without it?</div></div>
+          <div class="msg a"><div class="av">AI</div><div class="c"><span class="t">09:48 · Architect</span>Internal auth still works via session cookies. SSO is blocked for external adjusters — about <b>14% of traffic</b>. Recommend we ship and patch within 24h.</div></div>
+          <div class="msg u"><div class="av">JW</div><div class="c"><span class="t">09:49 · Jonny</span>Approved. Proceed.</div></div>
+          <div class="msg a"><div class="av">AI</div><div class="c"><span class="t">09:49 · Architect</span>Acknowledged. Promoted to prod. I'll re-compile the moment Security-η unblocks.</div></div>
+        </div>
+        <div class="chat-in">
+          <input placeholder="Ask the Architect…"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Build #247</span>
+    <span class="ok">● Deployed · 0 errors · 2 warnings</span>
+    <span>Re-compile on blueprint change · ON</span>
+    <div class="right">
+      <span>us-east-1 · eu-west-2</span>
+      <span>95% automated</span>
+    </div>
+  </div>
+</div>
+
+</div></div><!-- /#df-frame /#df-stage -->
+<script>
+(function(){
+  var DESIGN_W=1440,DESIGN_H=872;var f=document.getElementById('df-frame');
+  function fit(){var s=Math.min(window.innerWidth/DESIGN_W,window.innerHeight/DESIGN_H);f.style.transform='scale('+s+')'}
+  fit();window.addEventListener('resize',fit);
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>DreamStack</title>
+<link href="https://fonts.googleapis.com/css2?family=&family=&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0c10; --panel:#0f1116; --line:#1d212b; --line-2:#2a2f3a;
+    --ink:#e7e9ee; --ink-2:#9aa0ab; --ink-3:#6b7280;
+    --blue:#60a5fa; --green:#34d399; --violet:#a78bfa;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Geist",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 32px;gap:48px}
+  .head{text-align:center;max-width:640px}
+  .mark{font-family:"Geist Mono",monospace;font-size:11px;letter-spacing:.25em;color:var(--ink-3);text-transform:uppercase;margin-bottom:18px}
+  h1{font-size:44px;font-weight:500;letter-spacing:-.02em;margin:0 0 14px;color:#fff}
+  .sub{color:var(--ink-2);font-size:15px;line-height:1.55;margin:0}
+
+  .grid{display:grid;grid-template-columns:repeat(3,minmax(260px,320px));gap:18px}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+
+  a.card{
+    display:flex;flex-direction:column;gap:14px;
+    background:var(--panel);border:1px solid var(--line);
+    border-radius:8px;padding:22px;text-decoration:none;color:inherit;
+    transition:border-color .15s, transform .15s;
+    position:relative;overflow:hidden;
+  }
+  a.card:hover{border-color:var(--line-2);transform:translateY(-2px)}
+  a.card .tag{font-family:"Geist Mono",monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3)}
+  a.card h2{margin:0;font-size:22px;font-weight:500;letter-spacing:-.01em;color:#fff}
+  a.card p{margin:0;font-size:13px;color:var(--ink-2);line-height:1.5;flex:1}
+  a.card .go{font-family:"Geist Mono",monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+  a.card .dot{width:8px;height:8px;border-radius:50%}
+  a.card.dc .dot{background:var(--violet);box-shadow:0 0 10px var(--violet)}
+  a.card.ds .dot{background:var(--blue);box-shadow:0 0 10px var(--blue)}
+  a.card.df .dot{background:var(--green);box-shadow:0 0 10px var(--green)}
+  a.card.dc .go{color:var(--violet)}
+  a.card.ds .go{color:var(--blue)}
+  a.card.df .go{color:var(--green)}
+
+  .foot{font-family:"Geist Mono",monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="mark">DreamStack · Prototype Index</div>
+    <h1>Three linked surfaces.<br/>One dream, end‑to‑end.</h1>
+    <p class="sub">DreamCatcher captures intent in a call. DreamStudio turns it into an ontology. DreamFactory ships it. Open any surface below.</p>
+  </div>
+
+  <div class="grid">
+    <a class="card dc" href="DreamCatcher.html">
+      <div class="tag">Capture</div>
+      <h2>DreamCatcher</h2>
+      <p>Realtime call with the Architect. Talk through what you want; the session transcript and intent graph grow as you speak.</p>
+      <div class="go"><span class="dot"></span>Open session →</div>
+    </a>
+    <a class="card ds" href="DreamStudio.html">
+      <div class="tag">Design</div>
+      <h2>DreamStudio</h2>
+      <p>Infinite canvas for the process ontology. Nodes, flows, front‑end stubs — plan before you build, or push straight to the factory.</p>
+      <div class="go"><span class="dot"></span>Open canvas →</div>
+    </a>
+    <a class="card df" href="DreamFactory.html">
+      <div class="tag">Build</div>
+      <h2>DreamFactory</h2>
+      <p>Agent swarm executes the blueprint. Live build log, streaming code, deployed preview — the plan becomes a running product.</p>
+      <div class="go"><span class="dot"></span>Open build →</div>
+    </a>
+  </div>
+
+  <div class="foot">Build #247 · Deployed · us‑east‑1</div>
+</div>
+</body>
+</html>

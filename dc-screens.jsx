@@ -1,0 +1,588 @@
+// ============================================================
+// DreamCatcher — extra screens
+// DeviceCheck · Joining · CompanyView · SessionDone
+// Each screen is a full-viewport overlay.
+// ============================================================
+
+const MARK_SRC = "assets/dreamstack-mark.png";
+
+// Small reusable brand wordmark
+function BrandMark({ size = 32, opacity = 1 }) {
+  return (
+    <div style={{ display: "inline-flex", alignItems: "center", gap: 10, opacity }}>
+      <img src={MARK_SRC} alt="" style={{ width: size, height: size }} />
+      <span style={{
+        color: "#E6E8EB", fontWeight: 500, fontSize: size * 0.75,
+        letterSpacing: "-0.01em"
+      }}>DreamCatcher</span>
+    </div>);
+
+}
+
+// ------------------------------------------------------------
+// Avatar tile with initials
+// ------------------------------------------------------------
+function AvatarTile({ name, gradient, size = 56, photo }) {
+  const initials = name.split(" ").map((w) => w[0]).slice(0, 2).join("");
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: "50%",
+      background: gradient,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      color: "white", fontWeight: 700,
+      fontSize: size * 0.32,
+      boxShadow: "0 2px 8px rgba(0,0,0,.25)",
+      flexShrink: 0,
+      overflow: "hidden",
+      backgroundImage: photo ? `url(${photo})` : undefined,
+      backgroundSize: "cover",
+      backgroundPosition: "center"
+    }}>{photo ? "" : initials}</div>);
+
+}
+
+// ------------------------------------------------------------
+// DeviceCheck — rebuilt to match the welcome screen aesthetic.
+// Same DreamCatcher logo, same animated dotted background, with a
+// live webcam feed (falls back to a still photo if camera denied).
+// ------------------------------------------------------------
+function DeviceCheck({ role, onJoin }) {
+  const videoRef = React.useRef(null);
+  const streamRef = React.useRef(null);
+  const [camReady, setCamReady] = React.useState(false);
+  const [camError, setCamError] = React.useState(false);
+  const [camOn, setCamOn] = React.useState(true);
+  const [micOn, setMicOn] = React.useState(true);
+
+  const startCam = React.useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        setCamReady(true);
+        setCamError(false);
+      }
+    } catch (err) {
+      setCamError(true);
+    }
+  }, []);
+
+  const stopCam = React.useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) videoRef.current.srcObject = null;
+    setCamReady(false);
+  }, []);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    if (camOn) {
+      (async () => {
+        if (cancelled) return;
+        await startCam();
+      })();
+    } else {
+      stopCam();
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [camOn, startCam, stopCam]);
+
+  React.useEffect(() => () => stopCam(), [stopCam]);
+
+  return (
+    <div className="dc-devcheck-screen dc-devcheck-v2">
+      {/* Animated dotted background — same as welcome screen */}
+      <div className="dc-bgdots" aria-hidden="true"></div>
+
+      {/* Top wordmark */}
+      <div className="dc-wm dc-wm-devcheck">
+        <img className="dc-wm-logo" src="assets/dreamcatcher-logo.png" alt="DreamCatcher" />
+      </div>
+
+      <div className="dc-devcheck-pair" style={{ margin: "20px 0px 0px" }}>
+        {/* Card 1 — webcam preview with name top-left + mic/cam bottom-left */}
+        <div className="dc-devcheck-card dc-devcheck-card-feed">
+          <div className="dc-devcheck-feed">
+            {camOn && !camError &&
+            <video
+              ref={videoRef}
+              className="dc-devcheck-video"
+              autoPlay
+              playsInline
+              muted
+              style={{ opacity: camReady ? 1 : 0 }} />
+
+            }
+            {camOn && (camError || !camReady) &&
+            <div className="dc-devcheck-fallback" style={{
+              backgroundImage: "url(assets/james-video-feed.jpg)"
+            }} />
+            }
+            {!camOn &&
+            <div className="dc-devcheck-camoff">
+              <div
+                className="dc-devcheck-camoff-avatar"
+                style={{ backgroundImage: "url(assets/james.jpg)" }}
+                role="img"
+                aria-label="John Smith" />
+            </div>
+            }
+            <div className="dc-devcheck-name-tl">John Smith</div>
+            <div className="dc-devcheck-feed-ctrls-bl">
+              <span
+                className={`btn${micOn ? "" : " off"}`}
+                onClick={() => setMicOn((v) => !v)}
+                role="button"
+                aria-label={micOn ? "Mute microphone" : "Unmute microphone"}>
+                {micOn ? <Icons.Mic size={16} /> : <Icons.MicOff size={16} />}
+              </span>
+              <span
+                className={`btn${camOn ? "" : " off"}`}
+                onClick={() => setCamOn((v) => !v)}
+                role="button"
+                aria-label={camOn ? "Turn camera off" : "Turn camera on"}>
+                {camOn ? <Icons.Camera size={16} /> : <Icons.CameraOff size={16} />}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2 — device selectors + Join now */}
+        <div className="dc-devcheck-card dc-devcheck-card-devices">
+          <div className="dc-dev-list">
+            <div className="dc-dev-row">
+              <span className="dc-dev-ico"><Icons.Mic size={18} /></span>
+              <span className="dc-dev-lbl">MacBook Pro Built-in Microphone</span>
+              <Icons.ChevDown size={16} stroke="rgba(230,232,235,.55)" />
+            </div>
+            <div className="dc-dev-row">
+              <span className="dc-dev-ico">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 5 6 9H2v6h4l5 4V5z" />
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                </svg>
+              </span>
+              <span className="dc-dev-lbl">MacBook Pro Built-in Speakers</span>
+              <Icons.ChevDown size={16} stroke="rgba(230,232,235,.55)" />
+            </div>
+            <div className="dc-dev-row">
+              <span className="dc-dev-ico"><Icons.Camera size={18} /></span>
+              <span className="dc-dev-lbl">FaceTime HD Camera</span>
+              <Icons.ChevDown size={16} stroke="rgba(230,232,235,.55)" />
+            </div>
+          </div>
+          <button className="dc-devcheck-join" onClick={onJoin} style={{ fontSize: "14px", height: "44px" }}>
+            Join now
+          </button>
+        </div>
+      </div>
+    </div>);
+
+}
+
+function DeviceRow({ icon, label }) {
+  return (
+    <div className="dc-devrow">
+      <span className="dc-devrow-ico">{icon}</span>
+      <span className="dc-devrow-lbl">{label}</span>
+      <Icons.ChevDown size={14} stroke="rgba(230,232,235,.55)" />
+    </div>);
+
+}
+
+function SpeakerIcon({ size = 14 }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor"
+    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 5 6 9H2v6h4l5 4V5z" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </svg>);
+
+}
+
+// ------------------------------------------------------------
+// PreludeCall — call UI shown AFTER joining, BEFORE the tour.
+// Lucy is on stage (large centered avatar). James is the small
+// PiP in the bottom-right. The architect sees a full call bar
+// with a "Start Dreaming" pill — tapping it kicks off the
+// session + tour.
+// ------------------------------------------------------------
+function PreludeCall({ onStartDreaming, onHangup, recordingSeconds = 0 }) {
+  const [micOn, setMicOn] = React.useState(true);
+  const [camOn, setCamOn] = React.useState(true);
+  const [shareOn, setShareOn] = React.useState(false);
+  const [aiOn, setAiOn] = React.useState(false);
+
+  return (
+    <>
+      <TopBar sessionName="Order Fulfilment Discovery" recordingSeconds={recordingSeconds} />
+      <div className="dc-company-main">
+        <div className="dc-company-stage">
+          <div className="dc-company-avatar">
+            <AvatarTile name="Lucy Martin" gradient="linear-gradient(135deg,#3B82F6,#1E3A8A)" photo="assets/lucy.jpg" size={88} />
+          </div>
+          <div className="dc-company-nametag">
+            Lucy Martin <span className="muted-ico"><Icons.MicOff size={10} /></span>
+          </div>
+
+          <div className="dc-company-pip">
+            <AvatarTile name="James Smith" gradient="linear-gradient(135deg,#6BAE44,#2F6A1F)" photo="assets/james.jpg" size={48} />
+            <div className="dc-company-pip-name">James Smith (You)</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="callbar" style={{ borderColor: "rgb(10, 14, 16)" }}>
+        <div className="cb-left">
+          <div className="ai-toggle">
+            <span className="spark"><Icons.Sparkle /></span>
+            <span
+              className={`sw ${aiOn ? "on" : ""}`}
+              onClick={() => setAiOn((v) => !v)}
+              role="button"
+              aria-pressed={aiOn}
+              aria-label={aiOn ? "Disable AI" : "Enable AI"} />
+            
+          </div>
+        </div>
+
+        <div className="cb-center">
+          <button className={`call-btn ${micOn ? "" : "off"}`} onClick={() => setMicOn((v) => !v)} aria-label="Mic">
+            {micOn ? <Icons.Mic /> : <Icons.MicOff />}
+            <span className="sub-chev"><Icons.ChevUp /></span>
+          </button>
+          <button className={`call-btn ${camOn ? "" : "off"}`} onClick={() => setCamOn((v) => !v)} aria-label="Camera">
+            {camOn ? <Icons.Camera /> : <Icons.CameraOff />}
+            <span className="sub-chev"><Icons.ChevUp /></span>
+          </button>
+          <button className={`call-btn ${shareOn ? "recording" : ""}`} onClick={() => setShareOn((v) => !v)} aria-label="Share screen">
+            <Icons.Share />
+          </button>
+
+          <button className="dc-start-dreaming" onClick={onStartDreaming} style={{ fontSize: "14px" }}>
+            <span className="sd-ico" aria-hidden="true">
+              <img src="assets/dreamcatcher-mark-blue.png" alt="" style={{ width: 22, height: 22, display: "block" }} />
+            </span>
+            Start Dreaming
+          </button>
+
+          <button className="call-btn" aria-label="Chat"><Icons.Chat /></button>
+          <button className="call-btn" aria-label="More"><Icons.More /></button>
+          <button className="call-btn hangup-pill" onClick={onHangup} aria-label="Hang up">
+            <svg width="52" height="32" viewBox="0 0 52 32" fill="none">
+              <rect width="52" height="32" rx="16" fill="#D93025"/>
+              <path d="M21 18.5c.3.3.6.3.9.1l1.1-1c.2-.2.5-.2.7-.1l2.4 1.1c.3.1.4.4.4.7v1.9c0 .4-.3.7-.7.6C19.6 21 15 15.7 15 9.8c0-.4.3-.7.7-.7h1.9c.3 0 .6.2.7.5l1.1 2.4c.1.3 0 .5-.1.7l-1 1.1c-.2.3-.2.6.1.9 1.4 1.5 2.3 2.8 2.6 3.8z"
+                  fill="white" transform="translate(10,2) rotate(135, 19, 14)"/>
+            </svg>
+          </button>
+        </div>
+
+        <div className="cb-right">{/* intentionally empty */}</div>
+      </div>
+    </>);
+
+}
+
+// ------------------------------------------------------------
+// Joining — overlay that fades the devcheck behind
+// ------------------------------------------------------------
+function JoiningOverlay() {
+  return (
+    <div className="dc-joining">
+      <div className="dc-joining-inner">
+        <img src={MARK_SRC} alt="" style={{ width: 36, height: 36, opacity: .9 }} />
+        <div className="dc-joining-txt">Joining…</div>
+      </div>
+    </div>);
+
+}
+
+// ------------------------------------------------------------
+// Company-user in-session view
+// What the company user sees throughout the session — a clean
+// call UI. No ontology, no Start Dreaming CTA; the Intelligence
+// Architect drives everything on their side.
+// ------------------------------------------------------------
+function CompanyView({ sessionName, recordingSeconds, onHangup }) {
+  const [micOn, setMicOn] = React.useState(false); // muted per ref
+  const [camOn, setCamOn] = React.useState(true);
+  const [shareOn, setShareOn] = React.useState(false);
+
+  return (
+    <>
+      <TopBar sessionName={sessionName} recordingSeconds={recordingSeconds} />
+      <div className="dc-company-main">
+        <div className="dc-company-stage">
+          <div className="dc-company-avatar">
+            <AvatarTile name="John Smith" gradient="linear-gradient(135deg,#6BAE44,#2F6A1F)" photo="assets/james.jpg" size={64} />
+          </div>
+          <div className="dc-company-nametag">John Smith <span className="muted-ico"><Icons.MicOff size={10} /></span></div>
+
+          <div className="dc-company-pip">
+            <AvatarTile name="Jack Smith" gradient="linear-gradient(135deg,#3B82F6,#1E3A8A)" photo="assets/thomas.jpg" size={48} />
+            <div className="dc-company-pip-name">Jack Smith</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom bar — standard call controls, no Start Dreaming */}
+      <div className="callbar">
+        <div className="cb-left">
+          <div className="ai-toggle">
+            <span className="spark"><Icons.Sparkle /></span>
+            <span className="sw" />
+          </div>
+        </div>
+
+        <div className="cb-center">
+          <button className={`call-btn ${micOn ? "" : "off"}`} onClick={() => setMicOn((v) => !v)} aria-label="Mic">
+            {micOn ? <Icons.Mic /> : <Icons.MicOff />}
+            <span className="sub-chev"><Icons.ChevUp /></span>
+          </button>
+          <button className={`call-btn ${camOn ? "" : "off"}`} onClick={() => setCamOn((v) => !v)} aria-label="Camera">
+            {camOn ? <Icons.Camera /> : <Icons.CameraOff />}
+            <span className="sub-chev"><Icons.ChevUp /></span>
+          </button>
+          <button className={`call-btn ${shareOn ? "recording" : ""}`} onClick={() => setShareOn((v) => !v)} aria-label="Share">
+            <Icons.Share />
+          </button>
+
+          <button className="call-btn" aria-label="Chat"><Icons.Chat /></button>
+          <button className="call-btn" aria-label="More"><Icons.More /></button>
+          <button className="call-btn hangup-pill" onClick={onHangup} aria-label="Hang up">
+            <svg width="52" height="32" viewBox="0 0 52 32" fill="none">
+              <rect width="52" height="32" rx="16" fill="#D93025"/>
+              <path d="M21 18.5c.3.3.6.3.9.1l1.1-1c.2-.2.5-.2.7-.1l2.4 1.1c.3.1.4.4.4.7v1.9c0 .4-.3.7-.7.6C19.6 21 15 15.7 15 9.8c0-.4.3-.7.7-.7h1.9c.3 0 .6.2.7.5l1.1 2.4c.1.3 0 .5-.1.7l-1 1.1c-.2.3-.2.6.1.9 1.4 1.5 2.3 2.8 2.6 3.8z"
+                  fill="white" transform="translate(10,2) rotate(135, 19, 14)"/>
+            </svg>
+          </button>
+        </div>
+
+        <div className="cb-right">{/* intentionally empty */}</div>
+      </div>
+    </>);
+
+}
+
+// ------------------------------------------------------------
+// Company-user "call ended" screen — no Push to DreamStudio.
+// ------------------------------------------------------------
+function CompanyCallEnded({ onExit }) {
+  return (
+    <div className="dc-overlay dc-done">
+      <div className="dc-done-inner">
+        <div className="dc-done-eyebrow">Call ended</div>
+        <h1 className="dc-done-title">Thanks for dreaming with us.</h1>
+        <div style={{
+          fontSize: 13.5, color: "rgba(230,232,235,.65)",
+          textAlign: "center", maxWidth: 340, lineHeight: 1.5,
+          marginTop: -4, marginBottom: 10
+        }}>
+          The intelligence architect will process the session and share the finalized workspace with your team.
+        </div>
+        <button className="dc-done-exit" onClick={onExit}>Back to home</button>
+      </div>
+    </div>);
+
+}
+
+// ------------------------------------------------------------
+// SessionDone — "DreamStudio is ready to go!" card
+// ------------------------------------------------------------
+function SessionDone({ onPush, onExit }) {
+  // Full-bleed SVG mockup with transparent clickable hotspots over the buttons.
+  // SVG native size: 1440 × 872. Buttons (per mockup):
+  //   Push button: x≈360, y≈403, w≈280, h≈32
+  //   Exit button: x≈360, y≈438, w≈280, h≈32
+  return (
+    <div className="dc-overlay dc-done-svg">
+      <div
+        className="dc-done-svg-stage"
+        style={{ backgroundImage: "url('assets/final-screen.svg')" }}>
+        
+        <button
+          className="dc-done-hotspot dc-done-hotspot-push"
+          aria-label="Push to DreamStudio"
+          onClick={onPush} />
+        
+        <button
+          className="dc-done-hotspot dc-done-hotspot-exit"
+          aria-label="Exit without saving"
+          onClick={onExit} />
+        
+      </div>
+    </div>);
+
+}
+
+function AppStackIcon({ size = 36 }) {
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: 8,
+      background: "#0B0D10", border: "1px solid #242A31",
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      color: "#E6E8EB"
+    }}>
+      <svg viewBox="0 0 24 24" width={size * 0.55} height={size * 0.55} fill="none" stroke="currentColor"
+      strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 3 3 7.5 12 12l9-4.5L12 3Z" />
+        <path d="M3 12l9 4.5L21 12" />
+        <path d="M3 16.5 12 21l9-4.5" />
+      </svg>
+    </div>);
+
+}
+
+Object.assign(window, {
+  BrandMark, DeviceCheck, JoiningOverlay, PreludeCall, CompanyView, CompanyCallEnded, SessionDone
+});
+
+// ============================================================
+// HandoffOverlay — DreamCatcher → DreamStudio morph animation
+// Phases: strip-ui → morph-nodes → handoff-screen
+// ============================================================
+
+// Node type → block color (matches canvas node colors)
+const NODE_TYPE_COLORS = {
+  process:    "#7C3AED",
+  subprocess: "#2563EB",
+  role:       "#16A34A",
+  system:     "#92400E",
+};
+
+// Unique node types in session order — used to colour the folder tabs.
+const TAB_ORDER = ["system","process","role","subprocess"];
+
+function HandoffOverlay({ phase, nodes }) {
+  const isHandoffScreen = phase === "handoff-screen";
+
+  // After ~3 seconds on the handoff-screen the inner project card morphs
+  // from the folder-tab "Converting…" state into a finished "Ready" card
+  // with metrics + handoff/exit CTAs. Reset whenever we leave the screen.
+  const [ready, setReady] = React.useState(false);
+  React.useEffect(() => {
+    if (!isHandoffScreen) { setReady(false); return; }
+    const t = setTimeout(() => setReady(true), 3000);
+    return () => clearTimeout(t);
+  }, [isHandoffScreen]);
+
+  if (!isHandoffScreen) return null;
+
+  // Derive up to 4 unique node types from live session data;
+  // fall back to the canonical order when no nodes are available.
+  const seen = new Set();
+  const tabTypes = [];
+  (nodes && nodes.length ? nodes.map(n => n.type) : TAB_ORDER).forEach(t => {
+    if (!seen.has(t) && NODE_TYPE_COLORS[t]) { seen.add(t); tabTypes.push(t); }
+  });
+  if (!tabTypes.length) tabTypes.push(...TAB_ORDER);
+
+  return (
+    <div className={`handoff-overlay ${phase}${ready ? " ready" : ""}`}>
+      {/* Animated halftone dot field — same as welcome screen */}
+      <div className="dc-bgdots" aria-hidden="true"></div>
+
+      <div className="handoff-center">
+
+        {/* Outer frosted card */}
+        <div className="handoff-outer-card">
+          <div className="handoff-header">
+            <span className="handoff-done-label">Your dream session is done</span>
+            <div className="handoff-brand-pill">
+              <img src="assets/dreamcatcher-logo.png" alt="DreamCatcher" className="handoff-brand-logo" />
+            </div>
+          </div>
+
+          {/* Inner project card — two states layered, cross-fade between them */}
+          <div className="handoff-card-stack">
+            {/* State 1: folder-tab card (initial) */}
+            <div className="handoff-card handoff-card-converting">
+              <div className="handoff-tabs">
+                {tabTypes.slice(0, 4).map((type, i) => (
+                  <div
+                    key={type}
+                    className={`handoff-tab handoff-tab-${i + 1}`}
+                    style={{ background: NODE_TYPE_COLORS[type] }}
+                  />
+                ))}
+              </div>
+              <div className="handoff-card-body">
+                <div className="handoff-card-meta">
+                  <div className="handoff-project-name">Order Fulfilment Discovery Company:<br />E-Commerce Platform Redesign</div>
+                  <div className="handoff-company">TechCorp</div>
+                </div>
+              </div>
+            </div>
+
+            {/* State 2: finished project card (after 3s) */}
+            <div className="handoff-card-ready">
+              <div className="handoff-ready-top">
+                <span className="handoff-ready-status" aria-hidden="true"></span>
+                <button className="handoff-ready-more" type="button" aria-label="More">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                    <circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/>
+                  </svg>
+                </button>
+              </div>
+              <div className="handoff-ready-title">Order Fulfilment Discovery Company: E-Commerce Platform Redesign</div>
+              <div className="handoff-ready-company">TechCorp</div>
+              <div className="handoff-ready-metrics">
+                <div className="handoff-ready-metric">
+                  <svg className="handoff-ready-metric-ring" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" fill="none" stroke="rgba(255,255,255,.12)" strokeWidth="2"/>
+                    <circle cx="12" cy="12" r="9" fill="none" stroke="#e6e8eb" strokeWidth="2" strokeLinecap="round"
+                            strokeDasharray={`${0.46 * 2 * Math.PI * 9} ${2 * Math.PI * 9}`}
+                            transform="rotate(-90 12 12)"/>
+                  </svg>
+                  <span>46% Process Coverage</span>
+                </div>
+                <div className="handoff-ready-metric">
+                  <svg className="handoff-ready-metric-ring" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" fill="none" stroke="rgba(255,255,255,.12)" strokeWidth="2"/>
+                    <circle cx="12" cy="12" r="9" fill="none" stroke="#e6e8eb" strokeWidth="2" strokeLinecap="round"
+                            strokeDasharray={`${0.76 * 2 * Math.PI * 9} ${2 * Math.PI * 9}`}
+                            transform="rotate(-90 12 12)"/>
+                  </svg>
+                  <span>76% Architecture</span>
+                </div>
+              </div>
+              <div className="handoff-ready-foot">Just created</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Status line — "Converting…" before, "✓ Ready" after */}
+        <div className="handoff-status">
+          <div className="handoff-converting">
+            <svg className="handoff-spinner" viewBox="0 0 24 24" fill="none" width="14" height="14">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeDasharray="40 20" strokeLinecap="round" />
+            </svg>
+            Converting ...
+          </div>
+          <div className="handoff-ready-label">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="m4 12 5 5L20 6"/>
+            </svg>
+            Ready
+          </div>
+        </div>
+
+        {/* Action buttons — appear with the ready state */}
+        <div className="handoff-actions">
+          <button className="handoff-action handoff-action-primary" type="button">Handoff to DreamStudio</button>
+          <button className="handoff-action handoff-action-secondary" type="button">Exit without saving</button>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+window.HandoffOverlay = HandoffOverlay;

@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DreamCatcher — Session</title>
+<link rel="stylesheet" href="ds-tokens.css?v=2"/>
+<link rel="stylesheet" href="dreamcatcher.css?v=61" />
+
+<style>
+  /* Scale-to-fit stage — the whole prototype renders at a fixed 1440×872
+     design size and is scaled by JS to fill the viewport, letterboxed on
+     black. This keeps the demo pixel-perfect on any screen (projectors,
+     laptops, shared-screen calls) — critical for investor demos. */
+  html, body { background:#000; }
+  #dc-stage {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #000;
+    overflow: hidden;
+  }
+  #dc-frame {
+    position: relative;
+    width: 1440px; height: 872px;
+    transform-origin: center center;
+    flex: 0 0 auto;
+    background: var(--chrome, #0B0D10);
+    overflow: hidden;
+    box-shadow: 0 40px 120px rgba(0,0,0,.55);
+  }
+  /* the existing welcome + devcheck screens inside the frame — override
+     their 100vw/100vh to fill the frame instead. */
+  #dc-frame .dc-welcome,
+  #dc-frame .dc-devcheck-screen { position: absolute !important; inset: 0 !important; }
+  #dc-frame .dc-welcome-frame,
+  #dc-frame .dc-devcheck-frame { width: 1440px; height: 872px; aspect-ratio: auto; }
+  /* React app shell needs to fill the frame (its CSS uses 100vw/100vh). */
+  #dc-frame .app { width: 1440px !important; height: 872px !important; }
+</style>
+</head>
+<body>
+
+<div id="dc-stage">
+  <div id="dc-frame">
+
+<!-- Welcome / lobby screen — rebuilt from scratch as native HTML.
+     Layout matches the reference: top DreamCatcher wordmark, centered
+     card with intro + New Meeting CTA + Join input + footer, animated
+     halftone dot field bleeding up from the bottom. -->
+<div id="welcome" class="dc-welcome">
+  <div class="dc-welcome-frame">
+    <!-- Animated halftone dot field — pure CSS, two layered radial-gradient
+         tiles cross-fading to create a soft pulsating shimmer. Masked to a
+         bottom band with vignette to match the reference. -->
+    <div class="dc-bgdots" aria-hidden="true"></div>
+
+    <!-- Top wordmark — full logo image (icon + DreamCatcher wordmark) -->
+    <div class="dc-wm">
+      <img class="dc-wm-logo" src="assets/dreamcatcher-logo.png" alt="DreamCatcher"/>
+    </div>
+
+    <!-- Centered card -->
+    <div class="dc-card">
+      <div class="dc-card-eyebrow" style="font-size: 14px">Welcome to DreamCatcher</div>
+      <h1 class="dc-card-title">Start your dream session today</h1>
+      <button id="dc-new-meeting" class="dc-cta" type="button" style="height: 44px">
+        <svg class="dc-cta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="6" width="13" height="12" rx="2"/>
+          <path d="m16 10 5-3v10l-5-3z"/>
+        </svg>
+        <span style="font-size: 14px">New Meeting</span>
+      </button>
+      <div class="dc-join">
+        <svg class="dc-join-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/>
+          <path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>
+        </svg>
+        <input type="text" class="dc-join-input" placeholder="Enter the link" />
+        <button class="dc-join-btn" type="button" style="padding: 0px; width: 92px">Join</button>
+      </div>
+      <div class="dc-card-foot" style="border-color: rgba(255, 255, 255, 0)">2026 DreamStack Inc. All rights reserved. Privacy &amp; Legal Policies</div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .dc-welcome{position:fixed;inset:0;z-index:9999;background:#0d0d0f;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:"Geist","Helvetica Neue",Arial,sans-serif;color:#fff}
+  .dc-welcome-frame{position:relative;width:min(100vw, calc(100vh * 1440 / 872));aspect-ratio:1440/872}
+  .dc-welcome.dc-hide{opacity:0;pointer-events:none;transition:opacity .35s ease}
+
+  /* ---- Animated halftone dot field ---- */
+  /* Bottom-band dot grid (matching the original reference) with a slow
+     pulsating animation — the dots themselves fade in/out on staggered
+     loops, plus a drifting glow brightens dots as it passes. */
+  .dc-bgdots{
+    position:absolute; inset:0; pointer-events:none; z-index:0;
+    overflow:hidden;
+  }
+  .dc-bgdots::after{
+    /* The dot grid — concentrated in the bottom half, fades up softly.
+       Dots stay fixed in place; only their opacity is animated. */
+    content:"";
+    position:absolute; inset:0;
+    background-image: radial-gradient(circle, rgba(255,255,255,.32) 1px, transparent 1.6px);
+    background-size: 14px 14px;
+    -webkit-mask-image:
+      linear-gradient(to bottom, transparent 50%, #000 88%, #000 100%),
+      radial-gradient(ellipse 70% 60% at 50% 100%, #000 30%, transparent 95%);
+    -webkit-mask-composite: source-in;
+            mask-image:
+      linear-gradient(to bottom, transparent 50%, #000 88%, #000 100%),
+      radial-gradient(ellipse 70% 60% at 50% 100%, #000 30%, transparent 95%);
+            mask-composite: intersect;
+    animation: dc-dots-fade 6s ease-in-out infinite;
+  }
+  @keyframes dc-dots-fade {
+    0%,100% { opacity:.3; }
+    50%     { opacity:.55; }
+  }
+  /* Wavy glow that travels horizontally and bobs vertically — this is
+     what creates the "wave" feel; the dots themselves stay still. */
+  .dc-bgdots::before{
+    content:"";
+    position:absolute;
+    width: 50%; height: 70%;
+    left: 25%; bottom: -10%;
+    background: radial-gradient(circle, rgba(255,255,255,.16) 0%, rgba(255,255,255,.07) 35%, transparent 65%);
+    filter: blur(28px);
+    animation: dc-glow-wave 10s ease-in-out infinite;
+    mix-blend-mode: screen;
+    z-index:1;
+  }
+  @keyframes dc-glow-wave {
+    0%   { transform: translate(-50%, 0); opacity:.6; }
+    25%  { transform: translate(-15%, -8%); opacity:.95; }
+    50%  { transform: translate(20%, 4%); opacity:.8; }
+    75%  { transform: translate(45%, -6%); opacity:.95; }
+    100% { transform: translate(-50%, 0); opacity:.6; }
+  }
+
+  /* ---- Top wordmark ---- */
+  .dc-wm{
+    position:absolute;
+    left:50%; top:23.2%;
+    transform:translate(-50%,-50%);
+    display:flex; align-items:center; gap:10px;
+    z-index:2;
+  }
+  .dc-wm-logo{ height:32px; width:auto; display:block; }
+  .dc-wm-text{ font-size:24px; font-weight:500; letter-spacing:-.01em; }
+
+  /* ---- Card ---- */
+  .dc-card{
+    position:absolute;
+    left:50%; top:50%;
+    transform:translate(-50%,-50%);
+    width:480px;
+    background: linear-gradient(180deg, rgba(28,28,32,.85), rgba(20,20,24,.85));
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius:16px;
+    padding: 44px 56px 24px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.45);
+    backdrop-filter: blur(8px);
+    z-index:2;
+  }
+  .dc-card-eyebrow{
+    text-align:center;
+    font-family:"Geist Mono","SF Mono",monospace;
+    font-size:13px;
+    color: rgba(255,255,255,.7);
+    margin-bottom:10px;
+  }
+  .dc-card-title{
+    text-align:center;
+    font-size:24px;
+    font-weight:500;
+    letter-spacing:-.015em;
+    color:#fff;
+    margin: 0 0 32px;
+    line-height: 1.25;
+  }
+
+  /* New Meeting pill — solid white with hover glow */
+  .dc-cta{
+    width:100%;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    height:48px;
+    border-radius:999px;
+    background:#fff;
+    color:#111;
+    font-family:inherit;
+    font-size:15px;
+    font-weight:500;
+    border:0;
+    cursor:pointer;
+    position:relative;
+    transition: transform .2s ease, box-shadow .35s ease;
+  }
+  .dc-cta-icon{ width:20px; height:20px; }
+  .dc-cta:hover{
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.6),
+      0 0 22px 6px rgba(255,255,255,.22),
+      0 0 60px 14px rgba(255,255,255,.18);
+  }
+  .dc-cta:active{ transform: translateY(1px); }
+
+  /* Join row — translucent input with inline Join button */
+  .dc-join{
+    margin-top:12px;
+    height:44px;
+    display:flex; align-items:center;
+    background: rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:999px;
+    padding: 0 6px 0 18px;
+  }
+  .dc-join-icon{ width:16px; height:16px; color: rgba(255,255,255,.45); flex:0 0 auto; }
+  .dc-join-input{
+    flex:1;
+    background:transparent;
+    border:0;
+    outline:none;
+    color:#fff;
+    font-family:inherit;
+    font-size:14px;
+    padding: 0 12px;
+  }
+  .dc-join-input::placeholder{ color: rgba(255,255,255,.4); }
+  .dc-join-btn{
+    height:32px;
+    padding: 0 14px;
+    border-radius:999px;
+    background:transparent;
+    border:0;
+    color:#fff;
+    font-family:inherit;
+    font-size:13px;
+    font-weight:500;
+    cursor:pointer;
+  }
+  .dc-join-btn:hover{ background: rgba(255,255,255,.06); }
+
+  .dc-card-foot{
+    margin-top: 44px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,.05);
+    text-align:center;
+    font-size:11px;
+    color: rgba(255,255,255,.35);
+  }
+
+  /* ---- Device-check screen (rebuilt to match welcome aesthetic) ---- */
+  .dc-devcheck-screen{
+    position:fixed;inset:0;z-index:900;
+    background:#0d0d0f;
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
+    font-family:"Geist","Helvetica Neue",Arial,sans-serif;color:#fff;
+  }
+  /* Reuse the welcome dot field + wordmark by class — they're already
+     position:absolute relative to a flex-centred parent, so they fill
+     the devcheck screen the same way they fill the welcome frame. */
+
+  /* Two-card pair — feed on the left, device list on the right */
+  .dc-devcheck-pair{
+    position:relative;
+    display:flex;
+    gap: 20px;
+    align-items: stretch;
+    z-index:2;
+    margin-top: 40px;
+  }
+  .dc-devcheck-card{
+    position:relative;
+    background:#1a1a1d;
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius:16px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.45);
+    backdrop-filter: blur(8px);
+    display:flex;
+    flex-direction:column;
+  }
+  .dc-devcheck-card-feed{
+    width: 560px;
+    padding: 16px;
+  }
+  .dc-devcheck-card-devices{
+    width: 460px;
+    padding: 12px 12px 20px;
+    justify-content: space-between;
+  }
+  /* Device-row list */
+  .dc-dev-list{
+    display:flex;
+    flex-direction:column;
+  }
+  .dc-dev-row{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    height: 56px;
+    padding: 0 14px;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    color: #e6e8eb;
+    font-size: 15px;
+  }
+  .dc-dev-row:last-child{ border-bottom: 0; }
+  .dc-dev-ico{
+    width: 22px;
+    display:flex; align-items:center; justify-content:center;
+    color: rgba(230,232,235,.85);
+  }
+  .dc-dev-lbl{
+    flex: 1;
+    color: #e6e8eb;
+    font-weight: 400;
+  }
+  .dc-devcheck-eyebrow{
+    text-align:center;
+    font-family:"Geist Mono","SF Mono",monospace;
+    font-size:13px;
+    color: rgba(255,255,255,.7);
+    margin-bottom:10px;
+  }
+  .dc-devcheck-title{
+    text-align:center;
+    font-size:22px;
+    font-weight:500;
+    letter-spacing:-.015em;
+    color:#fff;
+    margin: 0 0 22px;
+    line-height: 1.3;
+  }
+  /* Webcam feed tile — fills the feed card */
+  .dc-devcheck-feed{
+    position:relative;
+    width:100%;
+    flex: 1;
+    aspect-ratio: 16/9;
+    border-radius:10px;
+    overflow:hidden;
+    background:#0a0a0c;
+  }
+  .dc-devcheck-video{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    transform: scaleX(-1); /* selfie-style mirror */
+    transition: opacity .35s ease;
+  }
+  .dc-devcheck-fallback{
+    position:absolute; inset:0;
+    background-size:cover;
+    background-position:center;
+  }
+  /* Name — top-left of feed (per reference) */
+  .dc-devcheck-name-tl{
+    position:absolute;
+    left:18px; top:18px;
+    font-size: 16px;
+    font-weight:500;
+    color:#fff;
+    letter-spacing:.01em;
+    text-shadow: 0 1px 6px rgba(0,0,0,.55);
+  }
+  /* Mic + camera buttons — bottom-left of feed */
+  .dc-devcheck-feed-ctrls-bl{
+    position:absolute;
+    left:14px; bottom:14px;
+    display:flex; gap:8px;
+  }
+  .dc-devcheck-feed-ctrls-bl .btn{
+    width:42px; height:36px;
+    border-radius:8px;
+    background: rgba(20,20,22,.78);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    backdrop-filter: blur(6px);
+    border:1px solid rgba(255,255,255,.06);
+    cursor:pointer;
+    transition: background .15s ease, color .15s ease;
+  }
+  .dc-devcheck-feed-ctrls-bl .btn:hover{
+    background: rgba(34,34,36,.88);
+  }
+  .dc-devcheck-feed-ctrls-bl .btn.off{
+    background:#E5484D;
+    border-color:rgba(255,255,255,.08);
+    color:#fff;
+  }
+  /* Camera off state — circular profile photo centered on dark feed */
+  .dc-devcheck-camoff{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    background:#0a0a0c;
+  }
+  .dc-devcheck-camoff-avatar{
+    width:30%;
+    aspect-ratio: 1 / 1;
+    border-radius:50%;
+    background-size:cover;
+    background-position:center;
+    box-shadow: 0 6px 24px rgba(0,0,0,.45);
+  }
+  /* Join now — primary white pill */
+  .dc-devcheck-join{
+    width:100%;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    height:48px;
+    margin-top: 16px;
+    border-radius:999px;
+    background:#fff;
+    color:#111;
+    font-family:inherit;
+    font-size:15px;
+    font-weight:500;
+    border:0;
+    cursor:pointer;
+    transition: box-shadow .35s ease, transform .2s ease;
+  }
+  .dc-devcheck-join:hover{
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.6),
+      0 0 22px 6px rgba(255,255,255,.22),
+      0 0 60px 14px rgba(255,255,255,.18);
+  }
+  .dc-devcheck-join:active{ transform: translateY(1px); }
+
+  /* Legacy hotspot styles kept as no-ops for any stale markup */
+  .dc-devcheck-hotspot{display:none}
+
+  /* ---- Legacy (unused) ---- */
+  .dc-devcheck-frame-LEGACY{
+    position:relative;
+    width:min(100vw, calc(100vh * 1440 / 872));
+    aspect-ratio:1440/872;
+  }
+  .dc-devcheck-img-LEGACY{display:block;width:100%;height:100%}
+  .dc-devcheck-avatar-LEGACY{
+    position:absolute;
+    /* Tile bounds measured off the underlying SVG (1440×872).
+       Inset ~16px from the outer card edges to match the right panel's padding. */
+    left:18.5%;
+    top:30.7%;
+    width:35.7%;
+    height:38.5%;
+    border-radius:8px;
+    background:url(assets/james-video-feed.jpg) center/cover no-repeat, #1a1d23;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+    pointer-events:none;
+    z-index:1;
+    overflow:hidden;
+  }
+  .dc-devcheck-avatar::after{
+    /* bottom-left name badge like the reference screenshot */
+    content:"John Smith";
+    position:absolute;
+    left:10px; bottom:10px;
+    padding:4px 8px;
+    font-family:"Geist","Helvetica Neue",Arial,sans-serif;
+    font-size:11px;
+    color:#fff;
+    background:rgba(0,0,0,.55);
+    border-radius:4px;
+    letter-spacing:.005em;
+    line-height:1.2;
+  }
+  /* mic + camera toggle buttons, bottom-right of the feed */
+  .dc-devcheck-ctrls{
+    position:absolute;
+    z-index:2;
+    right:0; bottom:0;
+    display:flex; gap:8px;
+    padding:10px;
+    pointer-events:none; /* decorative for now */
+  }
+  .dc-devcheck-ctrls .btn{
+    width:30px; height:30px;
+    border-radius:6px;
+    background:rgba(0,0,0,.55);
+    color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    backdrop-filter: blur(4px);
+  }
+  .dc-devcheck-hotspot{
+    position:absolute;
+    left:69.58%; top:64.85%;
+    transform:translate(-50%,-50%);
+    width:22.22%; height:4.47%;
+    background:transparent;border:0;cursor:pointer;
+    border-radius:999px;z-index:2;
+  }
+  .dc-devcheck-hotspot:hover{background:rgba(255,255,255,.06);box-shadow:0 0 0 2px rgba(96,165,250,.25)}
+  .dc-devcheck-hotspot:focus{outline:2px solid rgba(59,130,246,.55);outline-offset:2px}
+  .dc-devcheck-hotspot:active{background:rgba(255,255,255,.1)}
+</style>
+
+<script>
+  (function(){
+    var w = document.getElementById('welcome');
+    // Dev: ?route=... or #route=... bypasses welcome so screens can be inspected.
+    var hash = (location.hash || '') + ' ' + (location.search || '');
+    if (/route=/.test(hash)) {
+      w.style.display = 'none';
+    }
+
+    function go(role){
+      window.__dcRole = role;
+      window.dispatchEvent(new CustomEvent('dc:welcome-pick', { detail: { role: role } }));
+      w.classList.add('dc-hide');
+      setTimeout(function(){ w.style.display='none'; }, 380);
+    }
+    document.getElementById('dc-new-meeting').addEventListener('click', function(){ go('architect'); });
+  })();
+</script>
+
+<div id="root"></div>
+
+<script>
+  window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "speed": 2.4,
+    "autoplay": true,
+    "accent": "#8B5CF6",
+    "dark": true,
+    "density": "comfortable",
+    "showLegend": true
+  }/*EDITMODE-END*/;
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="dc-icons.jsx"></script>
+<script type="text/babel" src="dc-data.jsx"></script>
+<script type="text/babel" src="dc-canvas.jsx?v=5"></script>
+<script type="text/babel" src="dc-sidebar.jsx?v=3"></script>
+<script type="text/babel" src="dc-chrome.jsx"></script>
+<script type="text/babel" src="dc-screens.jsx?v=3"></script>
+<script type="text/babel" src="dc-tweaks.jsx"></script>
+<script type="text/babel" src="dc-role-compare.jsx"></script>
+<script type="text/babel" src="dc-tour.jsx?v=3"></script>
+<script type="text/babel" src="dc-app.jsx?v=2"></script>
+
+</div><!-- /#dc-frame -->
+</div><!-- /#dc-stage -->
+
+<script>
+  // Scale the fixed 1440×872 frame to fit the viewport (letterboxed).
+  (function(){
+    var DESIGN_W = 1440, DESIGN_H = 872;
+    var frame = document.getElementById('dc-frame');
+    function fit(){
+      var sx = window.innerWidth / DESIGN_W;
+      var sy = window.innerHeight / DESIGN_H;
+      var s = Math.min(sx, sy);
+      frame.style.transform = 'scale(' + s + ')';
+    }
+    fit();
+    window.addEventListener('resize', fit);
+  })();
+</script>
+</body>
+</html>
